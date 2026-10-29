@@ -1,0 +1,312 @@
+
+
+@media (min-width: 502px) and (max-width:806px){
+#btnPrev{
+        margin-left: 1px;position: absolute;bottom: 1px;;left: 114px;
+    }
+    
+    #btnNext{
+        position: absolute;top: 36px;left: 212px;
+    }
+}
+
+@media (min-width: 501px){
+#btnPrev{
+           margin-left: 1px;
+    position: absolute;
+    bottom: 0px;
+    left: 125px;
+}
+    
+    #btnNext{
+        position: absolute;bottom: 0px;left: 212px;
+    }    
+}
+    
+
+@media (max-width: 500px){
+#mainwrap {
+    padding: 0px!important;
+    
+}
+}
+
+@media (max-width: 500px){
+.plyr--audio .plyr__controls {
+    background-color: transparent;
+    border: none;
+    color: #333;
+    padding: 20px 20px 20px 13px;
+    width: 88%;
+    margin-left: 130px!important;
+
+}
+
+
+
+}
+
+
+@media (min-width: 372px){
+.plyr__controls button svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    fill: currentColor;
+    margin-left: 55px;
+    margin-top: -13px!important;
+    margin-bottom: -11px!important;
+}
+}
+
+.plyr--audio .plyr__controls {
+    background-color: transparent;
+    border: none;
+    color: #333;
+    padding: 17px 20px 20px 13px;
+    width: 88%;
+    margin-left: 160px!important;
+}
+
+add-bottom { margin-bottom:2rem !important; }
+.left { float:left; }
+.right { float:right; }
+.center { text-align:center; }
+
+
+/* Audio Player Styles
+================================================== */
+
+audio {
+margin:0 15px 0 14px;
+width:670px;
+}
+
+#mainwrap {
+  width: 100%;
+    padding: 0px 102px;
+    background-color: #666666;
+    opacity: 0.9;
+    height: 90px;
+    border-top: 3px solid #333;
+}
+
+#audiowrap,
+#plwrap {
+margin:0 auto;
+}
+
+.plyr--audio .plyr__controls button.tab-focus:focus, .plyr--audio .plyr__controls button:hover, .plyr__play-large {
+    
+    color: #565d64!important;
+}
+
+#tracks {
+position: absolute;
+    /* top: 77px; */
+    bottom: -3px;
+    left: 58px;
+    /* text-align: center; */
+}
+
+#nowPlay {
+display:inline;
+}
+
+#npAction {
+padding: 0px 21px;
+position:absolute;
+}
+
+#npTitle {
+padding: 4px 21px;
+}
+
+#plList li {
+cursor:pointer;
+display:block;
+margin:0;
+padding:21px 0;
+}
+
+#plList li:hover {
+background-color:rgba(0,0,0,.1);
+}
+
+.plItem {
+position:relative;
+}
+
+.plTitle {
+left:50px;
+overflow:hidden;
+position:absolute;
+right:65px;
+text-overflow:ellipsis;
+top:0;
+white-space:nowrap;
+}
+
+.plNum {
+padding-left:21px;
+width:25px;
+}
+
+.plLength {
+padding-left:21px;
+position:absolute;
+right:21px;
+top:0;
+}
+
+.plSel,
+.plSel:hover {
+background-color:rgba(0,0,0,.1);
+color:#333;
+cursor:default !important;
+}
+
+a[id^="btn"] {
+border-radius:3px;
+color:#333;
+cursor:pointer;
+display:inline-block;
+font-size:2rem;
+height:35px;
+line-height:.8;
+margin:0 20px 20px;
+padding:5px 10px;
+text-decoration:none;
+transition:background .3s ease;
+width:35px;
+}
+
+a[id^="btn"]:last-child {
+margin-left:-4px;
+}
+
+a[id^="btn"]:hover,
+a[id^="btn"]:active {
+background-color:rgba(0,0,0,.1);
+color:#333;
+}
+
+a[id^="btn"]::-moz-focus-inner {
+border:0;
+padding:0;
+}
+
+button[data-plyr="play"]{
+        position: absolute!important;
+    left: 0px!important;
+}
+
+button[data-plyr="pause"]{
+position: absolute!important;
+    left: -2px!important;
+}
+
+
+
+/* Plyr Overrides
+================================================== */
+
+.plyr--audio .plyr__controls {
+background-color:transparent;
+border:none;
+color:#333;
+padding:17px 20px 20px 13px;
+    width: 88%;
+    margin-left: 76px;
+}
+
+.plyr--audio .plyr__controls button.tab-focus:focus,
+.plyr--audio .plyr__controls button:hover,
+.plyr__play-large {
+background:rgba(0,0,0,.1);
+}
+
+.plyr__progress--played, .plyr__volume--display {
+color:rgba(0,0,0,.1);
+}
+
+.plyr--audio .plyr__progress--buffer,
+.plyr--audio .plyr__volume--display {
+background:rgba(0,0,0,.1);
+}
+
+.plyr--audio .plyr__progress--buffer {
+color:rgba(0,0,0,.1);
+}
+
+
+/* Media Queries
+================================================== */
+@media (max-width: 371px){
+    .plyr__controls .plyr__progress:first-child, .plyr__controls .plyr__time:first-child, .plyr__controls>button:first-child {
+    margin-left: 78px!important;
+}
+
+
+button[data-plyr="pause"] {
+    position: absolute!important;
+    left: 96px!important;
+}
+
+.SearchBar::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  font-size: 13px;
+}
+.SearchBar::-moz-placeholder { /* Firefox 19+ */
+ font-size: 13px;
+}
+.SearchBar:-ms-input-placeholder { /* IE 10+ */
+  font-size: 13px;
+}
+.SearchBar:-moz-placeholder { /* Firefox 18- */
+  font-size: 13px;
+}
+
+.plyr__controls .plyr__progress, .plyr__controls .plyr__time, .plyr__controls>button {
+    margin-left: -19px!important;
+    padding: 0px 100px 0px 0px!important;
+}
+
+#npAction {
+    display: none;
+}
+
+#npTitle {
+    float: left!important;
+}
+
+#mainwrap {
+    width: 115%!important;
+    margin-left: -11px!important;
+}
+#npTitle {
+    padding: 4px 21px!important;
+    float: left!important;
+}
+
+
+
+ #btnPrev{
+        margin-left: 1px;position: absolute;bottom: -5px;left: 24px;
+    }
+    
+    #btnNext{
+        position: absolute;    bottom: -5px;
+    left: 109px;
+    }
+    
+}
+@media (min-width: 372px) and (max-width:500px){
+    #btnPrev{
+        margin-left: 1px;position: absolute;bottom: 0px;left: 21px;
+    }
+    
+    #btnNext{
+        position: absolute;top: 36px;left: 104px;
+    }
+   
+}

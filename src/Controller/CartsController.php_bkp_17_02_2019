@@ -1,0 +1,496 @@
+<?php
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\Event\Event;
+use Cake\Controller\Component\FlashComponent;
+use Cake\Network\Session;
+use Cake\Mailer\Email;
+use Cake\Mailer\MailerAwareTrait;
+
+/**
+ * Carts Controller
+ *
+ * @property \App\Model\Table\CartsTable $Carts
+ *
+ * @method \App\Model\Entity\Cart[] paginate($object = null, array $settings = [])
+ */
+class CartsController extends AppController
+{
+  public function beforeFilter(Event $event)
+  {
+      // allow all action
+      $this->Auth->allow(['add']);
+
+  }
+
+  public function initialize()
+    {
+      parent::initialize();
+      $this->loadComponent('Paystack');
+    }
+
+  public function add() {
+      $this->autoRender = false;
+      if ($this->request->isAjax('post')) {
+        //set transaction ref
+        $ref = $this->Carts->readProduct();
+
+        if(!isset($ref[0]['trans_ref'])){
+          $cart_ref = $this->request->data['trans_ref'];
+        }else{
+          $cart_ref = $ref[0]['trans_ref'];
+        }
+
+        $cartitem = [];
+        $cartitem['id'] = $this->request->data['id'];
+        $cartitem['price'] = $this->request->data['price'];
+        $cartitem['license'] = $this->request->data['license'];
+        $cartitem['trans_ref'] = $cart_ref;
+          $this->Carts->addProduct($cartitem);
+
+
+      }
+      echo $this->Carts->getCount();
+
+  }
+  
+    public function paypal(){
+    $cartitems=$this->Carts->readProduct();
+    //print_r($cartitems);
+    $total_price = 0;
+    $this->loadModel('Stores');
+    $details_array=[];
+    foreach($cartitems as $key=>$value){
+       $total_price += $cartitems[$key]['price'];
+       
+       $productobj=[];
+       $finddetails=$this->Stores->find()->where(['id'=>$cartitems[$key]['id']])->first();
+       $productobj['name']=$finddetails['name'];
+       $productobj['quantity']=1;
+       $productobj['price']=$cartitems[$key]['price'];
+       $productobj['sku']='BEATID'.$cartitems[$key]['id'];
+       $productobj['currency']='USD';
+       $productobjfinal=json_decode(json_encode($productobj), FALSE);
+       //print_r($productobj);
+       array_push($details_array,$productobjfinal);
+    }
+    $ch = curl_init();
+    $clientId = "ATA2wLy0lWaVAtUOy8CewhsR_foLHtbTPAfxYxSTMll3pCy2Zh4qmf1-RjDUJxQ10My9MW6oZJBXsnB0";
+    $secret = "ECeGB8nDV3nf1xNjA-nTYU2XDnFb3yCJ2Wl03my9a2C0bU8CgYcgv9SDiQ_WDv0VxiKK9OdWOtMvi7Aj";
+    curl_setopt($ch, CURLOPT_URL, "https://api.sandbox.paypal.com/v1/oauth2/token");
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+    curl_setopt($ch, CURLOPT_USERPWD, $clientId.":".$secret);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+    $result = curl_exec($ch);
+    $err = curl_error($ch);
+    $access_token="";
+    if ($err) {
+      echo "cURL Error #:" . $err;
+    }
+    else
+    {
+        $json = json_decode($result);
+      
+        $access_token = $json->access_token;
+    }
+        
+        $ch = curl_init();
+        
+        $data = '{
+	"intent": "sale",
+	"payer": {
+		"payment_method": "paypal"
+	},
+	"transactions": [{
+		"amount": {
+			"total": "'.$total_price.'",
+			"currency": "USD",
+			"details": {
+				"subtotal": "'.$total_price.'",
+				"tax": "0",
+				"shipping": "0",
+				"handling_fee": "0",
+				"shipping_discount": "0",
+				"insurance": "0"
+			}
+		},
+		"description": "The payment transaction description.",
+		"payment_options": {
+			"allowed_payment_method": "INSTANT_FUNDING_SOURCE"
+		},
+		"item_list": {
+			"items":'.json_encode($details_array).'
+		}
+	}],
+	"note_to_payer": "Contact us for any questions on your order.",
+	"redirect_urls": {
+		"return_url": "https://amplifihub.com/carts/paymentconfirm",
+		"cancel_url": "https://amplifihub.com/carts/view"
+	}
+}';
+            
+            curl_setopt($ch, CURLOPT_URL, "https://api.sandbox.paypal.com/v1/payments/payment");
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data); 
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+              "Content-Type: application/json",
+              "Authorization: Bearer ".$json->access_token."", 
+              "Content-length: ".strlen($data))
+            );      
+        $result = curl_exec($ch);
+       //$user = $this->request->session()->read('Auth.User');
+//$username = $user['firstname'].' '.$user['lastname'];
+        
+        
+        if(empty($result))die("Error: No response.");
+        else
+        {
+            $json = json_decode($result);
+           // print_r($json->links);
+            /*for ($x = 0; 0 < $json.lengh; $x++) {
+                    echo "The number is: $x <br>";
+                } */
+               
+                die($json);
+    
+         
+            
+        }
+
+
+
+  }
+  
+  
+
+  public function sendMailToArtist($buyername=null,$producername=null,$buyeremail=null){
+    $email = new Email();
+    $email->template('beatbuyer')
+    ->setViewVars(['username' => $buyername,'producername'=>$producername])
+    ->attachments(['PremiumLicense.pdf' => '/home2/amplifih/public_html/plugins/Panel/src/Template/Carts/Premiumlicense.pdf'])
+    ->emailFormat('html')
+    ->to($buyeremail)
+    ->from('noreply@amplifihub.com', 'Amplifihub')
+    ->subject('You just purchased a beat! Congratulations!');
+    
+    
+    $sent = $email->send();
+    //print_r($sent);
+    //die;
+    //debug($sent);
+                if ($sent):
+                    return true;
+                else:
+                    return false;
+                endif;
+      
+  }
+  
+    public function sendMailTobuyer($buyername=null,$producername=null,$selleremail=null){
+  /*  $email = new Email();
+    $email->template('beatseller')
+    ->setViewVars(['username' => $buyername,'producername'=>$producername])
+    ->emailFormat('html')
+    //->to($selleremail)
+    ->to('admin@amplifihub.com')
+    ->from('noreply@amplifihub.com', 'Amplifihub')
+    ->subject('You just purchased a beat! Congratulations!');
+    $sent = $email->send();*/
+    
+    //debug($sent);
+                //if ($sent):
+                    return true;
+                //else:
+                    //return false;
+                //endif;
+      
+  }
+  
+  
+  public function paymentconfirm($reference = null){
+      
+      
+      
+        
+
+        
+         if($reference==''){
+             
+          
+                $user = $this->request->session()->read('Auth.User');
+                $firstnameBuyer = $user['firstname'];
+                $lastnameBuyer = $user['firstname'];
+                $niknameBuyer = $user['aka'];
+                $addressBuyer = $user['address'].' '.$user['state'].' '. $user['country'].','. $user['zip'];
+                
+               
+                $cartitems=$this->Carts->readProduct();
+                
+                $total_price = 0;
+                $this->loadModel('Stores');
+                $this->loadModel('Users');
+                $details_array=[];
+                $users_details=[];
+                
+               
+                
+                foreach($cartitems as $key=>$value){
+                    
+                     $finddetails=$this->Stores->find()->where(['id'=>$cartitems[$key]['id']])->first();
+                     $user_details=$this->Users->find()->where(['id'=>$finddetails['user_id']])->first();
+                     $selleremail = $user_details['email'];
+                     $sellername = $user_details['fullname'];
+                     if(!in_array($finddetails['name'],$users_details)){
+                       
+                         
+                        
+                         $buyername =  $user['firstname'].' '.$user['lastname'];
+                         $buyeremail = $user['email'];
+                         
+                         $myemail =   $this->sendMailToArtist($buyername,$sellername,$buyeremail);
+                         
+                           $myemailas = $this->sendMailTobuyer($buyername,$sellername,$selleremail);
+                         
+                         if(!$this->sendMailToArtist($buyername,$sellername,$buyeremail)){
+                             
+                      
+                             
+                         }
+                         if(!$this->sendMailTobuyer($buyername,$sellername,$selleremail)){
+                    
+                         }
+                         
+                          $emailtoken = $this->Users->tokenize($buyeremail);
+                                $email = new Email('default');
+                                $email->to($buyeremail)
+                                        ->template('mytemplates')
+                                        ->viewVars(['token' => $emailtoken['token']])
+                                        ->emailFormat('html')
+                                         ->attachments(['PremiumLicense.pdf' => '/home2/amplifih/public_html/plugins/Panel/src/Template/Carts/Premiumlicense.pdf'])
+                                        ->sender('noreply@amplifihub.com', 'Amplifihub')
+                                        ->from('noreply@amplifihub.com', 'Amplifihub')
+                                        ->subject('Amplifihub Email Registration Confirmation');
+                                $sent = $email->send();
+                     } 
+                     
+                  
+
+                }
+                 
+              
+              ///print_r($bseller);
+              $this->Flash->success(__('Your beat store transaction has been confirmed.'));
+              //die;
+             
+             
+             
+         }else{
+             
+               
+                
+
+            $this->loadModel(Carts);
+            $cart = $this->Carts->getCount();
+                
+            $display = 'hide';
+            $respdata = $this->Paystack->verifytransaction($reference);
+        
+            $readcart = $this->Carts->readProduct();
+            unset($readcart);
+        
+            $del = $this->request->getsession()->delete('cart');
+            debug($respdata);
+            //check if status is true, else redirect with error message
+           if (!$respdata['status']) {
+              $errmsg = $respdata['message'];
+              $this->Flash->error(__('Beat store transaction confirmation error'.$respdata['message'].'. Contact site admin '));
+              //return $this->redirect(['controller' => 'plans','action' => 'subscribe']);
+          }
+        
+          //if data result is success, then save and active user's reference after confirming it is not yet saved and give value to the client
+        
+          if($respdata['data']['status'] == 'success') {
+            $userid = $this->Auth->user('id');
+            $amount = $respdata['data']['amount']/100;
+            $paid = $this->Carts->paid($reference,$userid,$amount);
+        
+            //debug($paid);
+        
+            if($paid){
+              $this->loadModel('Stores');
+              $beatseller = $this->Carts->find()->select()->where(['Carts.trans_ref' => $reference, 'Carts.buyer_id' => $userid])->contain(['Stores'])->first();
+              $bseller =  $beatseller->store->user_id;
+        
+              $this->Flash->success(__('Your beat store transaction has been confirmed.'));
+              //save to money made
+              $this->loadModel('Bankbalances');
+        
+              //check if user already has record on the database
+              //else save or update
+              $check = $this->Bankbalances->find()->where(['user_id'=>$bseller]);
+        
+              if($check->isEmpty()):
+              $baldata['user_id'] = $bseller;
+              $baldata['balance'] = $amount;
+              $bank = $this->Bankbalances->newEntity();
+              $balsave = $this->Bankbalances->patchEntity($bank,$baldata);
+              $this->Bankbalances->save($balsave);
+               else:
+                 $bankbal = $check->first();
+                 $baldata = [];
+                $baldata['user_id'] = $bseller;
+                $baldata['balance'] = $amount + $bankbal->balance;
+                $balsave = $this->Bankbalances->patchEntity($bankbal,$baldata);
+              $this->Bankbalances->save($balsave);
+              endif;
+            }
+        
+        
+            $query = $this->Carts->find('all',
+            ['conditions'=>['trans_ref'=>$reference,'status'=>'paid', 'buyer_id' => $userid],
+            'contain'=>['Stores']]);
+        
+            $download = $this->paginate($query);
+            //debug($download);
+            $this->set(compact('download','display','cart'));
+            $this->set('_serialize', ['download']);
+                //give user value/save into subscription
+                //$result = $this->_add($respdata);
+          
+          }
+             
+         }
+         
+           
+  }
+
+  public function downloads(){
+          $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+        
+    $userid = $this->Auth->user('id');
+    $query = $this->Carts->find('all',
+    ['conditions'=>['status'=>'paid', 'buyer_id' => $userid],
+    'contain'=>['Stores']]);
+
+    $download = $this->paginate($query);
+    //debug($download);
+    $this->set(compact('download','cart'));
+    $this->set('_serialize', ['download']);
+  }
+
+  public function view() {
+          $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+        
+      $this->viewBuilder()->theme('Panel')->layout('store2');
+      $this->loadModel('Stores');
+      $display = 'hide';
+      $shop = 'hide';
+      $item = 0;
+      $carts = $this->Stores->readProduct();
+      if (null!=$carts) {
+        $shop = 'show';
+        $item = count($carts);
+      }
+
+      $carts = $this->Carts->readProduct();
+      
+ 
+
+
+
+      //debug($carts);
+      $products = [];
+      if (null!=$carts) {
+          foreach ($carts as $productId => $count) {
+              $product = $this->Stores->get($count['id']);
+              $product['count'] = $count;
+              $product['price'] = $count['price'];
+              $product['license'] = $count['license'];
+              $products[]=$product;
+
+              //Save cart item to db
+              $savecart=[];
+              $savecart['buyer_id'] = $this->Auth->user('id');
+              $savecart['beat_id'] = $count['id'];
+              $savecart['beat_type'] = $count['license'];
+              $savecart['trans_ref'] = $count['trans_ref'];
+              $cart = $this->Carts->newEntity();
+              $cartsave = $this->Carts->patchEntity($cart,$savecart);
+              $cartsaved = $this->Carts->save($cartsave);
+          }
+      }
+      $this->set(compact('products','display','shop', 'item','cart'));
+  }
+
+  public function update($id=null,$license = null) {
+      
+      //$this->autoRender = false;
+      if ($this->request->is('post')) {
+        //$cart = ;
+
+
+        $del = $this->Carts->remove($id,$license);
+
+        if(!isset($del[0]['id'])){
+          $this->Flash->error(__('No record found. Maybe you have already removed this item'));
+          return $this->redirect(['action'=>'view']);
+          /*$readcart = $this->Carts->readProduct();
+          debug($readcarts);*/
+        }
+
+          if($this->Carts->delete($this->Carts->get($del[0]['id']))) {
+
+            //read Session
+            $search = [];
+            $search['id'] = $id;
+            $search['license'] = $license;
+            $readcart = $this->Carts->readProduct();
+            $key = false;
+            foreach ($readcart as $k => $v) {
+                if ($v['id'] == $search['id'] && $v['license'] == $search['license']) {
+                    $key = $k;
+                    // key found - break the loop
+                    break;
+                }
+            }
+
+              unset($readcart[$key]);
+              $this->Carts->saveProduct($readcart);
+              $this->Flash->success(__('Item removed'));
+              return $this->redirect(['action'=>'view']);
+          }
+
+      }
+      return $this->redirect(['action'=>'view']);
+  }
+
+  /**
+   * sendfile method
+   *
+   * @return \Cake\Http\Response|void
+   */
+  public function sendFile($beattype,$beat)
+  {
+    $filePath = WWW_ROOT .'files'. DS .'Stores'. DS .$beattype. DS . $beat;
+   $this->response->file(
+    $filePath,['download' => true, 'name' => $beat]
+  );
+  if(!file_exists($filePath)){
+    $this->Flash->error(__('Beat File not available. Contact admin'));
+    return $this->redirect(['action'=>'paymentconfirm']);;
+  }
+  // Return the response to prevent controller from trying to render
+  // a view.
+  return $this->response;
+  }
+  
+  
+
+  
+}

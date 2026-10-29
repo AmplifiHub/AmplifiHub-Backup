@@ -1,0 +1,789 @@
+/* Base CSS */
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Source+Sans+Pro:300,400,600,700&display=swap');
+.alignleft {
+    float: left;
+    margin-right: 15px;
+}
+.alignright {
+    float: right;
+    margin-left: 15px;
+}
+.aligncenter {
+    display: block;
+    margin: 0 auto 15px;
+}
+a:focus, input:focus, textarea:focus, button:focus { outline: 0 solid }
+a:hover { text-decoration: none }
+img {
+    max-width: 100%;
+    height: auto;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 15px;
+    font-weight: 400;
+    font-family: inherit;
+}
+body {
+    font-family: 16px/1.2 "Open Sans", "Arial", "Helvetica Neue", "Helvetica", sans-serif;
+    color: #000;
+    line-height: 1.7;
+    font-weight: 400;
+    font-size: 13px;
+
+}
+
+.toggle {
+    display: none;
+}
+
+.thumb-bg {background-image: url(../img/music-thumb.jpg);}
+
+
+.wrap-body-area {
+    padding: 30px 30px 0px 30px;
+    overflow: hidden;
+}
+
+/* ---------------------------------------------------
+    body-area-css
+----------------------------------------------------- */
+
+.body-area {
+    overflow: hidden;
+}
+
+.header-arear {
+    background: #262626;
+}
+
+.header-arear h2 {
+    margin: 0;
+    color: #fff;
+    padding: 30px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 400;
+    font-size: 30px;
+}
+
+.main-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.main-menu li {
+    display: inline-block;
+    position: relative;
+}
+
+.main-menu li a {
+    display: block;
+    padding: 20px 15px;
+    text-transform: capitalize;
+    font-size: 15px;
+    color: #fff;
+    text-align: center;
+    font-weight: 400;
+    transition: .3s;
+    font-family: 'Roboto', sans-serif;
+}
+
+.main-menu {
+    text-align: right;
+    margin-right: 20px;
+}
+
+
+.logo-area {
+    display: inline-block;
+    float: left;
+    width: 22%;
+    text-align: center;
+    padding: 15px 0px;
+    border-bottom: 1px solid #666666;
+}
+
+.logo-area img {
+    max-width: 150px;
+}
+#cart-counter {
+    position: absolute;
+    top: 10px;
+    left: 28px;
+    background-color: #E30D40;
+}
+.badge {
+    display: inline-block;
+    min-width: 10px;
+    padding: 3px 7px;
+    font-size: 12px;
+    font-weight: 300;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: #777;
+    border-radius: 10px;
+}
+
+/* dropdwon css*/
+
+.main-menu ul li ul {
+    position: absolute;
+    width: 200px;
+    top: 66px;
+    left: 0px;
+    background-color:  #999999;
+    text-align:  left;
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transition: .3s;
+    padding: 10px;
+    box-shadow: 0 0 5px #f1f1f1;
+
+}
+.main-menu li ul li  {
+    display: block;
+}
+.main-menu li:hover ul  {
+    opacity: 1;
+    visibility: visible;
+    top: 65px;
+}
+.main-menu ul li:hover > a  {
+    color: #E30D40;
+}
+.main-menu li ul li > a  {
+    padding: 5px;
+    text-align: left;
+}
+.main-menu ul li:hover li:hover > a  {
+    color: #E30D40;
+}
+
+#mobile-menu {
+    display: none;
+}
+
+
+
+.maninmanu_logo {
+    display: none;
+}
+
+
+.right-content h2 {
+    font-weight: 200;
+    text-transform: capitalize;
+}
+
+button.gray, button.green, button.red {
+    background-color: #666666;
+    border: 0;
+    color: #fff;
+    padding: 5px 10px;
+    text-transform: capitalize;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+button.green {
+    background-color: #99D5CA;
+}
+
+button.red {
+    background-color: #C92D39;
+}
+
+.left-menu {
+    padding: 30px;
+    background: #262626;
+    height: 100vh;
+}
+
+.left-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.left-menu li {
+    display: block;
+    padding: 10px 0px;
+}
+
+.left-menu li a {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 400;
+    display: block;
+    text-transform: capitalize;
+    transition: .3s;
+}
+
+.left-menu li a:hover {
+    color: #E30D40;
+}
+
+.next-btn ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.next-btn li {
+    display: inline-block;
+}
+
+
+.next-btn li a {
+    color: #fff;
+    padding: 5px 10px;
+    background-color: #999999;
+    display: block;
+    margin-top: 30px;
+    transition: .3s;
+}
+
+.next-btn li.active a {
+    background-color: #CCCCCC;
+    color: #000;
+}
+.next-btn li a:hover {
+    color: #C92D39;
+}
+
+tr {
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.footer-arear {
+    margin: 0px 30px 30px 30px;
+    text-align: center;
+    background-color: #E5E5E5;
+    padding: 20px;
+}
+
+.footer-arear p {
+    margin: 0;
+    font-weight: 600;
+    color: #666;
+}
+
+
+/* ---------------------------------------------------
+    my-beats-css
+----------------------------------------------------- */
+
+
+td a {
+    color: #999;
+    font-size: 30px;
+    padding-left: 1px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    transition: .3s;
+}
+
+td a i.fa {
+    box-shadow: 5px 5px 20px 0px #f9f9f9;
+    transition: .3s;
+}
+
+td a:hover i.fa {
+    color: #99D5CA;
+}
+
+
+/*
+ ---------------------------------------------------
+    promo-beats-css
+----------------------------------------------------- 
+*/
+
+.promoto-beats.right-content p {
+    margin: 0;
+    display: inline-block;
+    float: right;
+    margin-right: 20px;
+}
+
+.promoto-beats.right-content p a {
+    background-color: #99D5CA;
+    padding: 10px;
+    color: #fff;
+    text-transform: uppercase;
+}
+.promoto-beats.right-content h2 {
+    display: inline-block;
+}
+
+/* ---------------------------------------------------
+    single-beat-page-css
+----------------------------------------------------- */
+
+.single-beat.wrap-body-area {
+    background-color: #262626;
+}
+
+.single-beat.header-arear {
+    background-color: #fff;
+}
+
+.single-beat.header-arear li a {
+    color: #000;
+}
+
+.about-img img {
+    max-width: 220px;
+    border-radius: 5px;
+}
+
+.about {
+    background-color: #262626;
+    padding: 10px 10px 35px 10px;
+    overflow: hidden;
+}
+
+.about-img {
+    float: left;
+    overflow: hidden;
+}
+
+.about-text {
+    float: left;
+}
+
+.single-beat.header-arear .logo-area {
+    border: none;
+}
+
+.single-beat.left-sidebar .left-content {
+    width: 32%;
+    height: auto;
+    float: left;
+}
+
+.about {
+    border-radius: 5px;
+    margin-top: 20px;
+	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+}
+
+.about-text p {
+    font-size: 13px;
+    font-weight: 200;
+    margin-left: 30px;
+    color: #E5E5E5;
+}
+
+.buy-now-btn {
+    margin-left: 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #333;
+    padding: 6px 25px;
+    display: block;
+    border-radius: 10px;
+}
+
+.btn-group a {
+    text-transform: uppercase;
+    color: #FDFDFD;
+    padding: 10px 5px;
+    display: block;
+    text-align: center;
+}
+
+.view-btn {
+    background-color: #E30D40;
+    width: 50%;
+}
+
+.goto-btn {
+    background-color: #202020;
+    width: 50%;
+    border: 1px solid #333;
+}
+
+.btn-group {
+    width: 100%;
+}
+
+
+.other-beat-area {
+    background-color: #202020;
+    padding: 10px 10px 30px 10px;
+    border-radius: 5px;
+    margin-top: 30px;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+
+.other-beat-area h3, .beatsyou-area h3 {
+    font-size: 15px;
+    text-align: center;
+    color: #ccc;
+    /*font-weight: 300;*/
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.thumb-bg {
+    width: 100%;
+    height: 145px;
+    background-size: cover;
+    background-position: center;
+}
+
+
+.song-area {
+    background-color: #262626 !important;
+    padding: 4px;
+    width: 30%;
+    text-align: center;
+    float: left;
+    margin: 0px 4px;
+    border-top: 3px solid #ccc;
+    border-radius: 5px;
+}
+
+.song-area h4 {
+    font-size: 14px;
+    margin: 15px 0px;
+    font-weight: 300;
+    text-transform: capitalize;
+    color: #ccc;
+}
+
+.song-buy a.buy-now-btn {
+    margin: 0;
+    font-size: 13px;
+    padding: 5px 6px;
+    display: inline-block;
+    margin-bottom: 5px;
+    border: 1px solid #E30D40;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.song-thumbnail a {
+    font-size: 40px;
+    color: #fff;
+    opacity: .9;
+    line-height: 110px;
+    transition: .3s;
+}
+
+.buy-now-btn:hover {
+    color: #fff;
+}
+
+.song-thumbnail a:hover {
+    color: #E30D40;
+    font-size: 44px;
+}
+
+
+/*audio-css*/
+
+.vz-wrapper {
+    position: relative;
+    height: 200px;
+    width: 100%;
+    background: -webkit-gradient(radial, center center, 0, center center, 460, from(#396362), to(#000000));
+    background: -webkit-radial-gradient(circle, #396362, #000000);
+    background: -moz-radial-gradient(circle, #396362, #000000);
+    background: -ms-radial-gradient(circle, #396362, #000000);
+   /* box-shadow: inset 0 0 160px 0 #000;
+    cursor: pointer;
+    /*border: solid 1px red;*/
+            background: repeating-linear-gradient( 
+            90deg,
+            #262626,
+            #262626 10px,
+            #333 20px,
+            #333 10px);
+            border-radius: 100px;
+}
+
+.vz-wrapper.-canvas {
+    position: absolute;
+    top: 60%;
+    left: 50.5%;
+    transform: translate(-50%, -50%);
+    height: initial;
+    width: initial;
+    background: transparent;
+    box-shadow: none;
+}
+
+@media screen and (min-width: 420px) {
+    .vz-wrapper {
+        /*box-shadow: inset 0 0 200px 60px #000;*/
+    }
+}
+
+/*right-site*/
+
+.single-beat.right-content {
+    width: 68%;
+    background-color: transparent;
+    padding: 0;
+    margin-top: 30px;
+    padding-left: 10px;
+    border-radius: 5px;
+    float: left;
+}
+
+.beatsyou-area {
+    background-color: #202020;
+    overflow: hidden;
+    padding: 10px 10px 0px 10px;
+	border-radius: 5px;
+	border: 1px solid #333;
+}
+
+.beatsyou-area .song-area {
+    width: 14%;
+    margin: 0 11px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ccc;
+}
+
+
+/* ---------------------------------------------------
+    add-bank-acc-page-css
+----------------------------------------------------- */
+
+.bank-left, .bank-right {
+    float: left;
+    width: 50%;
+    background-color: #CCCCCC;
+    padding: 23px;
+    overflow: hidden;
+}
+
+.bank-left h3, .bank-right h3, .withdraw-left h3 {
+    font-size: 22px;
+    text-transform: capitalize;
+    font-weight: 600;
+}
+
+.bank-datails-form input[type="submit"], .withdraw-left input[type="submit"] {
+    border: none;
+    background-color: #99D5CA;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.bank-datails-form input[type="text"], .bank-datails-form input[type="number"], .withdraw-left input[type="number"] {
+    padding: 8px 12px;
+    font-size: 14px;
+    width: 60%;
+    border: none;
+    background-color: #B2B2B2;
+    color: #fff;
+}
+
+::placeholder {
+    color: #E2E2E2;
+}
+
+.bank-right {
+    background-color: #999999 !important;
+    height: 362px;
+}
+
+.bank-right p {
+    color: #fff;
+    font-size: 18px;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+    margin-top: 5px;
+}
+
+
+/* ---------------------------------------------------
+    withdraw-page-css
+----------------------------------------------------- */
+
+
+.withdraw-left {
+    background-color: #CCCCCC;
+    float: left;
+    overflow: hidden;
+    padding: 20px;
+    width: 33%;
+}
+
+.withdraw-middle {
+    background-color: #999999;
+    float: left;
+    padding: 28px 20px;
+    overflow: hidden;
+    width: 42%;
+}
+
+.withdraw-content {
+    overflow: hidden;
+}
+
+.withdraw-right {
+    background-color: #999999;
+    padding: 31px 87.3px;
+    float: right;
+    overflow: hidden;
+    width: 25%;
+    height: 127px;
+}
+
+.withdraw-left input[type="number"] {
+    padding: 10px 12px;
+}
+
+.withdraw-mid-left {
+    float: left;
+    border-right: 2px solid #fff;
+    margin-right: 20px;
+    padding-right: 20px;
+}
+
+.withdraw-middle p {
+    font-size: 15px;
+    color: #fff;
+    font-weight: 400;
+    text-transform: capitalize;
+    margin-bottom: 10px;
+}
+
+
+.withdraw-right h3, .withdraw-right h4 {
+    color: #fff;
+    margin-bottom: 0;
+    float: right;
+    font-weight: 300;
+    text-transform: capitalize;
+}
+
+.withdraw-right h4 {
+    font-weight: 600;
+    font-size: 22px;
+}
+
+.withdraw-right h3 {
+    margin-bottom: 5px;
+}
+
+.withdraw-mid-right {
+    overflow: hidden;
+}
+
+.withdraw-table {
+    margin-top: 30px;
+}
+
+.withdraw-table h2 {
+    font-size: 24px;
+}
+
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+
+a,
+a:hover,
+a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #262626;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #000;
+}
+
+
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 15px;
+    display: block;
+}
+
+#sidebar ul li a:hover {
+    color: #fff;
+    background: #C92D39;
+}
+
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+
+#content {
+    width: 100%;
+    padding: 20px 20px 70px 20px;
+    min-height: 100vh;
+    transition: all 0.3s;
+    background-color: #f9f9f9;
+}
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: 0px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+    #sidebarCollapse span {
+        display: none;
+    }
+}

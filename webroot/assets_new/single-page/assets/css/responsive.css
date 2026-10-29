@@ -1,0 +1,471 @@
+/* Medium Layout: 1280px. */
+@media only screen and (min-width: 992px) and (max-width: 1200px) { 
+  .table td, .table th {
+    padding: 0.25rem;
+    vertical-align: middle;
+    font-size: 14px;
+}
+    .left-menu li a {
+    font-size: 14px;
+}
+
+/* withdrow-monye*/
+
+    .bank-datails-form input[type="submit"], .withdraw-left input[type="submit"] {
+    padding: 12px 14px;
+    font-size: 12px;
+}
+    .bank-left h3, .bank-right h3, .withdraw-left h3 {
+    font-size: 18px;
+}
+    .withdraw-left {
+    height: 126px;
+}
+    .withdraw-right h4 {
+    font-size: 20px;
+}
+    .withdraw-right h3 {
+    font-size: 22px;
+}
+/*single-beats*/
+    .single-beat.left-sidebar .left-content {
+    width: 40%;
+}
+    .about-text p {
+    font-size: 16px;
+    margin-left: 20px;
+}
+    .buy-now-btn {
+    margin-left: 20px;
+    font-size: 16px;
+}
+    .btn-group a {
+    font-size: 14px;
+}
+    .single-beat.right-content {
+    width: 60%;
+}
+    .beatsyou-area .song-area {
+    width: 20%;
+    margin: 0 13px;
+    margin-bottom: 30px;
+}
+}
+/* Tablet Layout: 768px. */
+@media only screen and (min-width: 768px) and (max-width: 991px) { 
+ 
+    .table td, .table th {
+    padding: .5rem;
+    font-size: 9px;
+    vertical-align: middle;
+}
+    .main-menu li a {
+    font-size: 12px;
+    padding: 20px 14px;
+}
+    .main-menu ul li ul {
+    position: absolute;
+}
+    .left-menu {
+    padding: 10px 0px 10px 10px;
+}
+    .left-menu li a, .footer-arear p {
+    font-size: 14px;
+}
+    .logo-area img {
+    max-width: 100px;
+}
+    .right-content h2 {
+    font-size: 20px;
+}
+    .next-btn li a {
+    padding: 8px 15px;
+    margin-top: 10px;
+    font-size: 12px;
+}
+        #sidebar ul li a {
+    font-size: 13px;
+}
+
+    
+/*add-bank-acc*/
+    
+    .bank-left h3, .bank-right h3, .withdraw-left h3 {
+    font-size: 16px;
+}
+    .bank-right {
+    height: 355px;
+}
+    .bank-right p {
+    font-size: 14px;
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+   /* withdrow-monye*/ 
+    .withdraw-left form input[type="submit"] {
+    margin-top: 6px;
+    width: 100%;
+    font-size: 12px;
+    padding: 8px 12px;
+}
+    .bank-datails-form input[type="text"], .bank-datails-form input[type="number"], .withdraw-left input[type="number"] {
+    width: 100%;
+}
+    .withdraw-middle {
+    padding: 17px 20px;
+}
+    .withdraw-mid-left {
+    float: unset;
+    border-right: 0;
+    margin-right: 0;
+    padding-right: 15px;
+}
+    .withdraw-middle p {
+    margin-bottom: 6px;
+}
+    .withdraw-mid-right {
+    overflow: unset;
+}
+    .withdraw-right {
+    padding: 50px 42px 50px 50px;
+    height: 160px;
+}
+    .withdraw-right h3 {
+    font-size: 18px;
+}
+    .withdraw-right h4 {
+    font-size: 16px;
+}
+/*promoto-beats*/
+    .promoto-beats.right-content p a {
+    font-size: 12px;
+}
+    
+/*single-beats*/
+    
+    .single-beat.left-sidebar .left-content {
+    width: 34%;
+}
+    .single-beat.right-content {
+    width: 66%;
+}
+    .about-text {
+    float: unset;
+    text-align: center;
+}
+    .about-text p {
+    margin-left: 0px;
+}
+    .buy-now-btn {
+    margin-left: 0px;
+}
+    .btn-group a {
+    font-size: 9px;
+}
+    .other-beat-area h3, .beatsyou-area h3 {
+    font-size: 14px;
+}
+    .thumb-bg {
+    height: 91px;
+}
+    .song-area {
+    width: 45%;
+    margin: 0px 5px;
+    margin-bottom: 12px;
+}
+    .beatsyou-area {
+    padding: 10px 0px 0px 5px;
+}
+    .beatsyou-area .song-area {
+    width: 22%;
+    margin: 0 6px;
+    margin-bottom: 30px;
+}
+    #sidebar {
+    min-width: 170px;
+}
+  
+}
+/* Mobile Layout: 320px. */
+@media only screen and (max-width: 767px) { 
+     .header-arear h2 {
+    font-size: 14px;
+    padding: 10px;
+}
+    .toggle {
+    display: block;
+}
+    #mobile-menu {
+    display: block;
+}
+    .main-menu {
+    display: none;
+}
+
+.header-arear {
+    width: 100%;
+    overflow: hidden;
+}
+    .logo-area {
+    border: none;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.header-arear {
+    position: relative;
+}
+
+.logo-area img {
+    max-width: 100px;
+}
+    .slicknav_nav ul li a span.slicknav_arrow {display: none;}
+    
+ 
+    .slicknav_menu {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 0;
+    width: 100%;
+    background: transparent;
+}
+
+.slicknav_nav {
+    background-color: #262626;
+    border-top: 1px solid #999;
+}
+
+.slicknav_menu .slicknav_menutxt {
+    display: none;
+}
+
+.slicknav_btn {
+    background-color: transparent;
+}
+
+.footer-arear {margin: 0px;padding: 5px;}
+    .single-beat.footer-arear {
+    background-color: #333333;
+    margin: 0;
+}
+
+.single-beat.footer-arear p {
+    color: #f6f6f6;
+}
+
+#sidebar {
+     margin-left: -250px; 
+}
+
+
+    .maninmanu_logo {
+    display: none;
+}
+    
+.toggle button {
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    z-index: 9;
+}
+.add-bank-acc.right-content, .withdraw.right-content {
+    width: 100%;
+}
+.right-content {
+    width: 385px;
+    margin: 0;
+    overflow: scroll;
+    height: auto;
+}
+    #content {
+    padding: 10px;
+}
+    
+    .next-btn {
+    margin-bottom: 20px;
+}
+
+
+
+.footer-arear p {
+    font-size: 12px;
+}
+
+.wrap-body-area {
+    padding: 0px;
+}
+
+.main-menu {
+    height: auto;
+    margin-bottom: 20px;
+    padding: 10px 30px;
+}
+
+button.gray, button.green, button.red {
+    padding: 5px 8px;
+}
+
+.next-btn li a {
+    font-size: 10px;
+    padding: 5px 10px;
+}
+
+    
+    .table td, .table th {
+    vertical-align: middle;
+}
+    .right-content h2 {
+    font-size: 15px;
+}
+    
+/*add-bank-acc*/
+    
+    .bank-left {
+    width: 100%;
+}
+
+.bank-right {
+    width: 100%;
+}
+
+.bank-left h3 {
+    font-size: 16px;
+}
+
+.bank-right h3 {
+    font-size: 16px;
+}
+
+.bank-right p {
+    font-size: 15px;
+}
+
+.bank-right {
+    height: auto;
+}
+    
+/*my-beats*/
+    
+    td a {
+    font-size: 24px;
+    padding-left: 4px;
+}
+    
+/*promoti-beats*/
+    .promoto-beats.right-content p a {
+    font-size: 10px;
+}
+
+.promoto-beats.right-content p {
+    margin-right: 1px;
+}
+   .promoto-beats.right-content .table th {
+    /*padding: .1rem;*/
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+    /*font-size: 10px;*/
+}
+    
+/*withdrow-monye*/
+    
+    .withdraw-left {
+    width: 100%;
+}
+
+.withdraw-middle {
+    width: 60%;
+}
+
+.withdraw-right {
+    width: 40%;    
+    padding: 51px 20px 31px 0px;
+}
+
+.withdraw-right h3 {
+    font-size: 16px;
+}
+
+.withdraw-right h4 {
+    font-size: 14px;
+}
+
+.withdraw-left h3 {
+    font-size: 16px;
+}
+    .withdraw-mid-left {
+    float: unset;
+    border-right: 0;
+    margin-right: 20px;
+    padding-right: 0;
+}
+    .withdraw-middle p {
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+    .withdraw-right {
+    height: 142px;
+}
+    .withdraw-middle {
+    padding: 10px 20px;
+}
+/*single-beats*/
+
+    .single-beat.left-sidebar .left-content {
+    display: block;
+    width: 100%;
+}
+
+.about-img img {
+    max-width: 150px;
+}
+
+.about-text p {
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.buy-now-btn {
+    margin-left: 10px;
+}
+
+.btn-group a {
+    font-size: 12px;
+}
+    .other-beat-area h3, .beatsyou-area h3 {
+    font-size: 16px;
+}
+
+.song-area h4 {
+    font-size: 12px;
+}
+
+.song-buy a.buy-now-btn {
+    font-size: 10px;
+}
+
+
+    .thumb-bg {
+    height: 115px;
+}
+    .single-beat.right-content {
+    width: 100%;
+    padding: 0px;
+    overflow: unset;
+}
+
+.beatsyou-area .song-area {
+    width: 30%;
+    margin: 0px 4px;
+    margin-bottom: 10px;
+}
+    
+}
+/* Wide Mobile Layout: 480px. */
+@media only screen and (min-width: 480px) and (max-width: 767px) { 
+
+
+
+
+}

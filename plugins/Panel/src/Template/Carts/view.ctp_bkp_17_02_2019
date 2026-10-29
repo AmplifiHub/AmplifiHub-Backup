@@ -1,0 +1,129 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Cart $cart
+ */
+?>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<h3 class="white"><?= __('Beat Cart Summary') ?></h3>
+<div class="stores index large-9 medium-8 columns content tbckgrd">
+  <?= $this->Flash->render(); ?>
+<div class="row">
+    <div class="col-lg-12">
+        <table class="table white">
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th>License</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php $total=0;?>
+        <?php foreach ($products as $product):?>
+        <tr>
+            <td><?php echo $product['name'];?></td>
+            <td><?php echo $product['license'];?></td>
+            <td>&#8358; <?php echo @number_format($product['price']); ?></td>
+            <td><div class="col-xs-3">
+
+                  <?= $this->Form->postLink(__('Remove'), ['action' => 'update', $product['id'],$product['license']], ['confirm' => __('Are you sure you want to delete # {0}?', $product['name'])]) ?>
+                </div></td>
+
+        </tr>
+             <?php $total += $product['price'];?>
+            <?php endforeach;?>
+
+        <tr class="success font-black"><strong>
+            <td colspan=3 class=" text-right"><strong>Total payment due</strong></td>
+            <td><strong>&#8358; <?php echo number_format($total);?></strong>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p class="pull-right">
+        <a type="button" href="/beat-hub" value="" id = "subscribe" class="btn btn-info pull-right"> Continue Shopping </a>
+        <button type="button" value="" onclick="payWithPaypal()" id = "subscribe" class="btn btn-success pull-right"> CheckOut With Paypal </button>
+        <button type="button" value="" onclick="payWithPaystack()" id = "subscribe" class="btn btn-success pull-right"> CheckOut </button><?= $this->Html->image('cards.png',['class'=>'pull-right'])
+   ?>
+
+
+
+    </p>
+
+          </div>
+      </div>
+</div>
+
+<?php
+$user = $this->request->session()->read('Auth.User');
+$username = $user['firstname'].' '.$user['lastname'];
+
+
+echo "<script>
+  function payWithPaystack()
+  {
+    var handler = PaystackPop.setup({
+      key: 'pk_live_a6549831a5a97d351686d954540d754493973461',
+      email:'". $user['email'] ."',
+      amount: '".$total * 100 ."',
+      ref: '".@$products[0]['count']['trans_ref']."',
+      callback: function(response){
+        //alert(ref);
+          window.location = '/carts/paymentconfirm/'+response.reference;
+      },
+      onClose: function(){
+          //alert('window closed');
+      }
+    });
+    handler.openIframe();
+  }
+  function payWithPaypal()
+  {
+  var cardHoldername = $('#cardHoldername').val();
+  var cardnumber = $('#cardnumber').val();
+  var cvc = $('#cvc').val();
+  var cardexpirymonth = $('#cardexpirymonth').val();
+  var cardexpiryyear = $('#cardexpiryyear').val();
+ // alert('pay with paypal2');
+   
+  var data = {cardHoldername:cardHoldername,cardnumber:cardnumber,cvc:cvc,cardexpirymonth:cardexpirymonth,cardexpiryyear:cardexpiryyear,amount:'".$total * 100 ."',buyerEmail:'". $user['email'] ."',username:'".$username."'};
+    console.log(data);
+    
+var request = $.ajax({
+  url: '/carts/paypal',
+  type: 'POST',
+  data: {data},
+});
+
+request.done(function(msg) {
+
+if(typeof(msg)!= 'object'){
+  var links =   JSON.parse(msg);
+  console.log(links);
+}else{
+    var links =  msg;
+     console.log(links);
+}
+(links.links).forEach( function(item,index){
+    console.log(item.method)
+    if(item.method=='REDIRECT'){
+        
+        window.location.href = item.href;
+    }
+})
+
+
+;
+});
+
+request.fail(function(jqXHR, textStatus) {
+  alert( textStatus );
+});
+  }
+  
+</script>"
+
+ ?>

@@ -1,0 +1,98 @@
+body {
+    padding: 0px;
+    margin: 0px auto;
+  }
+
+   .container {
+      width: 50%;
+      
+  }
+
+  h4 {
+    text-align: center;
+  }
+
+  .first-row-wrapper {
+    background-color: rgb(106, 185, 133);
+    height: 250px;
+    border-radius: 5px;
+  }
+
+  .hr_divide {
+      border: 1px solid black; 
+  }
+  .star_rating {
+    background-color: rgb(224, 178, 97);
+    height: 90px;
+    border-radius: 5px;
+  }
+
+  .bio_box {
+    background-color: rgb(224, 178, 97);
+    height: 150px;
+    /* margin-top: -15px; */
+    border-radius: 5px;
+  }
+
+  .second-row-wrapper {
+    background-color: rgb(139, 139, 235);
+    height: 300px;
+    border-radius: 5px;
+  }
+
+  .beat_stores {
+    background-color: rgb(241, 151, 151);
+    height: 450px;
+    border-radius: 5px;
+  } 
+
+  .third-row-wrapper {
+    background-color: rgb(202, 241, 138);
+    height: 390px;
+    margin-top: -150px;
+    border-radius: 5px;
+  }
+
+  .rate_producer_box {
+    background-color: rgb(172, 207, 111);
+    height: 50px;
+    border-radius: 5px;
+  }
+  .comment_box {
+      background-color: gold;
+      height: 100px;
+      width: 250px;
+      border-radius: 5px;
+      /* margin-left: 20px; */
+  }
+
+  .complaint_channel_box {
+    background-color: gold;
+    height: 100px;
+    width: 250px;
+    border-radius: 5px;
+}
+
+  .star_chat_box {
+    background-color: rgb(172, 207, 111);
+    height: 70px;
+    border-radius: 5px;
+  }
+
+  
+
+  h2 {
+      
+      text-align: center;
+      background-color: rgb(245, 124, 208);
+  }
+  
+  /* .col-sm-3 {
+      background-color: lightcyan;
+  }
+  
+  .col-sm-6 {
+      background-color: lavender;
+  } */
+
+  

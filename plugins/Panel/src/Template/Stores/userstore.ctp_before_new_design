@@ -1,0 +1,66 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Store[]|\Cake\Collection\CollectionInterface $stores
+ */
+?>
+<h3><?= __('My Beat Store') ?></h3>
+<div class="stores content tbckgrd">
+      <?php foreach ($stores as $store): ?>
+<!--beatstore-->
+<div class="row">
+  <div class="row white">
+    <div class="container">
+    <div class="col-xs-2 col-sm-1 col-md-1" id="beat_image"><?= $this->Html->link($this->Html->image('aabtn2.png',['class'=>'img-responsive ']),'javascript:player.play()', ['class'=>'img-responsive load', 'id'=> 'https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/'.h($store->lease_name), 'escape' => false]) ?>
+  <?= $this->Html->link($this->Html->image('pause.png',['class'=>'img-responsive ']),'javascript:player.pause()',['class'=>'hide pause pausehere','escape' => false]) ?>
+  <?= $this->Html->link($this->Html->image('aabtn2.png',['class'=>'img-responsive ']),'javascript:player.play()',['class'=>'img-responsive hide play', 'id'=> 'https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/'.h($store->lease_name),'escape' => false]) ?>
+    </div>
+
+    <div class="col-xs-10 col-sm-3 col-md-3" id="beat_name"><h4 style="margin-bottom:0px"><?= h($store->name) ?>&nbsp;</h4><h6 class="remove-pad" style="
+    margin: 0px;padding: 0px"><?= h($store->genre->genre) ?></h6></div>
+
+    <div class="col-xs-4 col-md-2" id="genre"><?= '<strong> Lease:</strong> &#8358; '.h(number_format(@$store->lease_price))?></div>
+
+   <div class="col-xs-4 col-md-2" id="beat_length"><?= '<strong> Premium:</strong> &#8358; '.h(@number_format($store->premium_price))?></div>
+    <div class="col-xs-4 col-md-2 cartbuy" id="cart_and_price">
+      <?= '<strong> Exclusive:</strong> &#8358; '.h(@number_format(@$store->exclusive_price))?>
+    </div>
+    <div class="col-xs-6 col-md-1 licence">
+      <div class="">
+        <h4>
+        <?= $this->Html->link('Edit',['action'=>'edit',$store->id],['class'=>'btn btn-primary btn-sm']) ?>
+        <?= $this->Form->postLink(
+                __('Delete'),
+                ['action' => 'delete', $store->id],
+                ['class'=>'btn btn-danger btn-sm','confirm' => __('Are you sure you want to delete # {0}?', $store->name)]
+            )
+        ?>
+      </h4>
+      </div>
+    </div>
+  </div>
+    </div>
+<!--div class="text-center">
+  <div class="col-xs-1" id="beat_image" ><?= $this->Html->link($this->Html->image('play_button.png'),'javascript:player.pause(); player.setSrc(\''.'https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/'.h($store->beat_name).'\'); player.load(); player.play()', array('escape' => false)) ?> </div>
+
+
+  <div class="col-xs-12" id="beat_name"><h2 class="remove-pad" style="margin: 0px;padding: 0px">
+  <?= h($store->name) ?>&nbsp;|<?= h($store->length) ?><?= h($store->user->aka) ?><?= h($store->genre->genre)?><?= h($store->lease_price) ?><?= h($store->premium_price) ?><?= h($store->exclusive_price) ?></h2><h4 class="remove-pad" style="
+  margin: 0px;padding: 0px">
+
+ </div>
+</div-->
+  <div class="mt-3 col-md-12 storeline"></div>
+</div>
+  <?php endforeach; ?>
+
+      <div class="paginator">
+        <ul class="pagination">
+            <?= $this->Paginator->first('<< ' . __('first')) ?>
+            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__('next') . ' >') ?>
+            <?= $this->Paginator->last(__('last') . ' >>') ?>
+        </ul>
+        <span class="pull-right"><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></span>
+    </div>

@@ -1,0 +1,919 @@
+<?php
+/**
+ * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link          https://cakephp.org CakePHP(tm) Project
+ * @since         0.10.0
+ * @license       https://opensource.org/licenses/mit-license.php MIT License
+ */
+use Cake\Cache\Cache;
+use Cake\Core\Configure;
+use Cake\Core\Plugin;
+use Cake\Datasource\ConnectionManager;
+use Cake\Error\Debugger;
+use Cake\Network\Exception\NotFoundException;
+
+$this->layout = false;
+
+/*if (!Configure::read('debug')) :
+    throw new NotFoundException(
+        'Please replace src/Template/Pages/home.ctp with your own version or re-enable debug mode.'
+    );
+endif;*/
+$cakeTitle = 'AmplifiHub';
+$cakeDescription = 'AmplifiHub is an online African music making marketplace that allows music producers to license / sell beats online, alongside other professionals who make and offer professional African music making services. Sign up today and earn while you entertain.';
+?>
+<!DOCTYPE html>
+<html>
+<head>
+   <?= $this->Html->charset() ?>
+
+     <title><?php if(isset($title)){ echo $title; }else{ echo $cakeTitle; }?></title> 
+    <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="<?php if(isset($description)){ echo $description; }else{ echo $cakeDescription; }?>" />
+
+<!-- Schema.org markup for Google+ -->
+<meta itemprop="name" content="AmplifiHub">
+<meta itemprop="description" content="AmplifiHub is an online African music making marketplace that allows music producers to license / sell beats online, alongside other professionals who make and offer professional African music making services.">
+<meta itemprop="image" content="https://amplifihub.com/img/amplifihubseo.jpg">
+
+<!-- Twitter Card data -->
+<meta name="twitter:title" content="AmplifiHub">
+<meta name="twitter:description" content="AmplifiHub is an online African music making marketplace that allows music producers to license / sell beats online, alongside other professionals who make and offer professional African music making services.">
+<meta name="twitter:image" content="https://amplifihub.com/img/amplifihubseo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Facebook -->
+<meta property="og:title" content="AmplifiHub">
+<meta property="og:description" content="AmplifiHub is an online African music making marketplace that allows music producers to license / sell beats online, alongside other professionals who make and offer professional African music making services.">
+<meta property="og:image" content="https://amplifihub.com/img/amplifihubseo.jpg">
+<meta property="og:url" content="https://amplifihub.com/">
+
+
+    <?= $this->Html->meta('icon') ?>
+
+    <?= $this->Html->css('/vendor/font-awesome/css/font-awesome.min') ?>
+    <?= $this->Html->css('https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800') ?>
+    <?= $this->Html->css('https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic') ?>
+       <?= $this->Html->css('/vendor/magnific-popup/magnific-popup') ?>
+    <?= $this->Html->css('creative.min') ?>
+    <?= $this->Html->css('/vendor/bootstrap/css/bootstrap.min') ?>
+    <!--?= $this->Html->css('/build/mediaelementplayer') ?-->
+    <?= $this->Html->css('custom') ?>
+         <?= $this->Html->script('rmodal') ?>
+   <?= $this->Html->css('animate') ?>
+    <?= $this->Html->css('rmodal') ?>
+    <?= $this->Html->script('rmodal') ?>
+ <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css'>
+    <?= $this->Html->css('https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css') ?>
+ 
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<?= $this->Html->script('/vendor/popper/popper.js') ?>
+        <?= $this->Html->script('/vendor/bootstrap/js/bootstrap.min') ?>
+      <link rel='stylesheet prefetch' href='//cdn.plyr.io/2.0.13/plyr.css'>
+      
+
+
+      <style type="text/css">
+          
+          .hide{
+              display: none!important;
+          }
+          .show{
+              display: block!important;
+          }
+          
+          img.img-responsive.pause {
+    position: absolute;
+    top: 75px;
+    left: 70px;
+}
+
+img.img-fluid.btnisition {
+    position: absolute;
+    top: 54px;
+    left: 62px;
+}
+
+.cart-btn{
+    bottom: 10px;
+    z-index: 999;
+    cursor: pointer;
+    left:55px;
+}
+#cart-counter {
+    position: relative;
+    top: -19px;
+    left: -12px;
+    background-color: #E30D40;
+}
+.pad{
+    color: #fff;
+}
+#mainNav.navbar-shrink{
+    background-color: #000!important;
+    color: #afafaf;
+}
+
+@media (min-width: 992px){
+#mainNav.navbar-shrink .navbar-nav > li.nav-item > a.nav-link, #mainNav.navbar-shrink .navbar-nav > li.nav-item > a.nav-link:focus {
+    color: #ffffff!important;
+}
+#mainNav .navbar-nav > li.nav-item > a.nav-link, #mainNav .navbar-nav > li.nav-item > a.nav-link:focus {
+    color: #fff;
+}
+}
+      </style>
+      <?= $this->Html->css('musicplayer') ?>
+    <?= $this->fetch('meta') ?>
+    <?= $this->fetch('css') ?>
+    <?= $this->fetch('script') ?>
+<meta name="theme-color" content="#E30D40" />
+</head>
+<body id="page-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+      <div class="container-fluid">
+           <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+          
+        <a class="navbar-brand js-scroll-trigger" href="#page-top"><?= $this->html->image('Panel.amplifihub-beta.png',['class'=>'img-responsive']); ?></a>
+      
+       
+          <?= $this->Html->link('<i class="fa fa-shopping-cart"></i>
+  <span class="badge" id="cart-mob">0</span>',["controller"=>"carts","action"=>"view"],["class"=>"pad showcart","escape"=>false]) ?>
+
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <?= $this->element('homemenu') ?>
+
+        </div>
+      </div>
+    </nav>
+
+    <header class="masthead" id="header">
+      <div class="header-content">
+        <div class="header-content-inner">
+          <h1 id="homeHeading">Your One Stop Hub For  
+              <span id="typed"></span>
+        <span class="cursor"></span></h1>
+          
+          <br>
+          <div class="row">
+            <div class="col-md-8 ">
+
+        </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-md-6 col-sm-6">
+             <?= $this->Form->create('',['type'=>'get','class'=>'form-inline  justify-content-center','url' =>['controller'=>'stores','action'=>'beats']]) ?>
+                  <div class="input-group">
+      <?= $this->Form->text('term', ['label' => false,'id'=> 'term','class' => ['form-control','SearchBar'],'placeholder'=> 'Search for beats, genre or producer','escape' => false, 'style' => 'width:100%!important;']);?>
+      <span class="input-group-btn">
+          <button class="btn btn-danger SearchButton" type="submit">
+            <span class="fa fa-search" ></span>
+        </button>
+      </span>
+    </div><!-- /input-group -->
+          <?= $this->Form->end() ?>
+
+
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="recentAndPromoted" id="about">
+        <h4 style="padding:14px 0px 14px 0px">Promoted Beats</h4>
+    <div class="row text-center" id="row-promoted">
+
+
+<?php foreach ($promoted as $promo):?>
+
+                      
+        <div class="col-6 col-md-2 col-sm-4  adheight">
+    
+            <div class="promoted-wrapper">
+                       <?php echo $this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/'.$promo['cover'],['class'=>'img-fluid','style'=> 'width:177px!important;height:150px!important;']);?>
+           <div class="promoted-text text-center">
+               <p><?php if(strlen($promo->name) > 8){ echo substr($promo->name,0,8). "..";}else{echo $promo->name;}?></p>
+                    <p><strong><?php if(strlen($promo->user->aka) > 8){ echo substr($promo->user->aka,0,8). "..";}else{echo $promo->user->aka;}?></strong></p>
+                    
+                </div> 
+                <div class="text-center" style="margin-top:10px;">
+                    <a class="addtocart btn btn-danger cart-btn" style="margin-bottom: 8px;" data-id="<?php echo $promo['id'];?>"><span class="fa fa-shopping-cart"></span> <?= $promo->lease_price ? h(number_format($promo->lease_price)): h(0) ?>+</a>
+                </div>
+
+            <div class="playimage">
+          
+          <a data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($promo['lease_name']);?>" 
+             data-type="<?=h($promo['lease_type']);?>"
+             data-name="<?=h(substr($promo['name'],0,10));?>"
+             data-user="<?= h(substr($promo['user']['aka'], 0, 10));?>"
+             class="play-wrap2">
+         <?= $this->Html->image('/img/play-button.png',['class'=>['img-fluid','btnisition']]);?>
+         
+      </a>
+          
+           <a class="pause-wrap2 hide">
+           <?= $this->Html->image('pause-button.png',['class'=> ['img-responsive','pause']]); ?>
+      </a>
+       
+                       
+
+            </div>
+          
+            </div>
+        </div>
+                    
+   <?php endforeach;  ?>
+    </div>
+    <br>
+    <div></div>
+    <br>
+    <h4 style="padding:14px 0px 14px 0px">Recent Uploads</h4>
+    <div class="row" id="row-recent" >
+ <?php foreach ($recent as $beat):?>
+    
+
+    <div class="col-6 col-md-2 col-sm-4  adheight">
+          <div class="promoted-wrapper"> 
+        <?=$this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/'.$beat['cover'],['class'=>'img-fluid','style'=> 'width:177px!important;height:150px!important;']);?>
+         <div class="promoted-text text-center">
+                    <p><?php if(strlen($beat->name) > 8){ echo substr($beat->name,0,8). "..";}else{echo $beat->name;}?></p>
+                    <p><strong><?php if(strlen($beat->user->aka) > 8){ echo substr($beat->user->aka,0,8). "..";}else{echo $beat->user->aka;}?></strong></p>
+                </div> 
+              <div class="text-center" style="margin-top:10px;">
+                    <a class="addtocart btn btn-danger cart-btn" style="margin-bottom: 8px;" data-id="<?php echo $beat['id'];?>"><span class="fa fa-shopping-cart"></span> <?= $beat->lease_price ? h(number_format($beat->lease_price)): h(0) ?>+</a>
+                </div>
+
+        <div class="playimage">
+           
+            <a data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($beat->lease_name);?>" 
+               data-type="<?=h($beat->lease_type);?>" 
+               data-name="<?=h(substr($beat->name,0,15));?>" 
+               data-user="<?=h(substr($beat->user->aka, 0, 10));?>"
+               class="play-wrap2 show">
+         <?= $this->Html->image('/img/play-button.png',['class'=>['img-fluid','btnisition']]);?>
+         
+      </a>
+           
+            <a class="pause-wrap2 hide">
+           <?= $this->Html->image('pause-button.png',['class'=> ['img-responsive','pause']]); ?>
+      </a>
+          
+          
+        
+        </div>
+          </div>
+    
+      </div>
+        <?php endforeach; ?>
+    </div>
+    <br>
+    </section>
+    
+    
+
+    <section id="mixing_and_mastering" class="bg-overlay3">
+      <div class="container">
+        <div class="row">
+            <div class='col-md-5'>
+                <div class="sectionContent">
+                    <h2>Earn while you entertain</h2>
+                    <p>With AmplifiHub it's easy for music makers in Africa to get paid while doing what they love, "Making Music".</p>
+                </div>
+                <div class="sectionContent">
+                     <h2>Who we are?</h2>
+                    <p>AmplifiHub is home to many professional who make good African Music. You can sell beats, buy beats and offer professional African Music making services here.</p>
+                </div>
+            </div>
+            <div class='col-md-7'>
+                <div class="row">
+                <div class="col-md-1 col-sm-2"></div>
+                <div class="col-md-10 col-sm-8">
+                    <img src="img/africaMap.png" class="img-responsive" style="  max-width: 100%; height: auto;display: block;"/> 
+             
+                </div>
+                <div class="col-md-1 col-sm-2"></div>
+                </div>
+            </div>
+        </div>
+         
+      </div>
+    </section>
+
+
+
+    <section id="bookartiste" style="padding: 100px 0 0 0;">
+     
+
+
+        <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                
+                <div id='featureImg'>
+                    <img src="img/dancers.png" class="img-responsive" style="  max-width: 100%; height: auto;display: block;"/> 
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mainfeatures" style="text-align: right;">
+                    <h4>Amplifihub's</h4>
+                <h1><span>Main</span> Features</h1>
+                </div>
+                <div class="index-link" style="background-color: #2b2b2b;">
+                    <ul class="ourService">
+                    <li><h2><i class="fa fa-caret-right"></i> &nbsp; African Music Making Service Hubs</h2></li>
+                    <li><h2><i class="fa fa-caret-right"></i> &nbsp; Main African Beat Store</h2></li>
+                    <li><h2><i class="fa fa-caret-right"></i> &nbsp; Personal Beat Store For African Music Producers</h2></li>
+                    <li><h2><i class="fa fa-caret-right"></i> &nbsp; Personal Music Making Service Hub For Every User</h2></li>
+                    <li><h2><i class="fa fa-caret-right"></i> &nbsp; Instant Payment</h2></li>
+                    </ul>
+                </div>
+            </div>
+
+          
+        </div>
+        
+      </div>
+
+
+
+
+    </section>
+    
+      <section id="mixing_and_mastering" class="bg-overlay2">
+      <div class="container">
+          <div class="row">
+              <div class="col-md-12 text-center">
+                  <h1>Join the New Wave</h1>
+                  <p>African music has gone beyond the streets of Africa, don't be left out</p>
+              </div>
+          </div>
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class='col-md-8'>
+                <div class="row">
+                <div class="col-md-1 col-sm-2"></div>
+                <div class="col-md-10 col-sm-8">
+                <div class="video-container">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/8dLkrDUGNbU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+                </div>
+                <div class="col-md-1 col-sm-2"></div>
+                </div>
+                <div class="text-center" style="margin-top: 13px;">
+                    <div class="row">
+                        <div class="col-md-4 col-sm-4"></div>
+                        <div class="col-md-4 col-sm-4">
+                            <a href="/sign-up" class="btn btn-danger btn-lg btn-block">Sign Up</a>
+                        </div>
+                        <div class="col-md-4 col-sm-4"></div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+         
+      </div>
+    </section>
+
+    <section id="callAction">
+        <div class="bg-overlay">
+	<div class="row text-center">
+            <h1 id="signup">Take Your Studio Online Today!</h1>
+       
+        <br><br>
+                   <a class="btn btn-primary btn-lg" id="signupbtn" href="/sign-up">Sign Up</a>
+	</div>
+</div>
+    </section>
+   
+
+
+<!--   <section>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto text-center">
+            <h2 class="section-heading">Contact AmplifiHub</h2>
+            <hr class="primary">
+            <p>Got questions to ask concerning our service? Feel free to reach out to us and we will get back to you as soon as possible.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 ml-auto text-center">
+            <i class="fa fa-phone fa-3x sr-contact" style="color: black;"></i>
+            <p>+234 905 310 0309</p>
+          </div>
+          <div class="col-lg-4 mr-auto text-center">
+            <i class="fa fa-envelope-o fa-3x sr-contact" style="color: black;"></i>
+            <p>
+              <a href="mailto:your-email@your-domain.com">support&#64;amplifihub.com</a>
+            </p>
+          </div>
+          <div class="col-lg-4 mr-auto text-center">
+           <i class="fa fa-map-marker fa-3x sr-contact" style="color: black;"></i>
+            <p>
+              Contact Address : No, 1 Olufowobi Str, Lawanson, Surulere, Lagos, Nigeria, 100254
+            </p>
+          </div>
+
+
+        </div>
+        <br/>
+
+
+    <div class="text-center">
+
+       <div class="text-center"> <a href=""></a></div>
+
+
+       <a href="https://facebook.com/amplifihub"></a>
+
+        <a href="https://facebook.com/amplifihub">
+        <img src="img/facebook.png"/></a>
+
+        <a href="https://instagram.com/amplifihub" >
+        <img src="img/instagram.png"/></a>
+
+        <a href=" https://twitter.com/amplifihub">
+        <img src="img/twitter.png"/></a>
+
+        <a href="https://www.linkedin.com/company/18303418/">
+        <img src="img/linkedin.png"/></a>
+      </div>
+
+      <div style="text-align:center;">
+
+      <span><a href="/">Home&nbsp</a></span>
+      <span> <a href="https://blog.amplifihub.com">Blog&nbsp</a></span>
+      <span> <a href="https://affiliates.amplifihub.com">Affiliates</a></span>
+      <span> <a href="/about">About&nbsp</a></span>
+      <span>  <a href="https://support.amplifihub.com/">Help&nbsp</a></span>
+      <span>  <a href="/terms-and-conditions">Terms and Conditions&nbsp</a></span>
+      <span><a href="/refund-policy">Refund Policy&nbsp</a></span>
+      <span> <a href="/privacy-policy">Privacy Policy&nbsp</a></span>
+      </div>
+      <div class = "what-afrihub-is" style="text-align: center;"> <span > Copyright &copy; Amplifihub <?= date('Y') ?></span></div>
+
+        </div>
+</section>-->
+
+
+    <section class="index-link">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="link-area">
+                    <h4>SERVICES</h4>
+                   <ul>
+                       <li><a href="beat-hub"> <i class="fa fa-caret-right"></i> &nbsp; Beat hub</a></li>
+                    <li><a href="mixing-and-mastering-hub"> <i class="fa fa-caret-right"></i> &nbsp; Mixing and mastering hub</a></li>
+                    <li><a href="song-writers-hub"> <i class="fa fa-caret-right"></i> &nbsp; Song writers hub</a></li>
+                    <li><a href="artistes-hub"> <i class="fa fa-caret-right"></i> &nbsp; Artistes hub</a></li>
+                     <li><a href="video-directors-hub"> <i class="fa fa-caret-right"></i> &nbsp; Video directors hub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="link-area">
+                    <h4>ABOUT US</h4>
+                    <ul>
+                    <li><a href="about"><i class="fa fa-caret-right"></i> &nbsp;  What is AmplifiHub</a></li>
+                    <li><a href="team-players"><i class="fa fa-caret-right"></i> &nbsp;  The team players</a></li>
+                    <li><a href="https://affiliates.amplifihub.com"><i class="fa fa-caret-right"></i> &nbsp;  Affliates</a></li>
+                    <li><a href="https://blog.amplifihub.com"><i class="fa fa-caret-right"></i> &nbsp;  Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="link-area">
+                    <h4>HELP</h4>
+                    <ul>
+                    <li><a href="https://support.amplifihub.com"><i class="fa fa-caret-right"></i> &nbsp; How the website works</a></li>
+                    <li><a href="https://blog.amplifihub.com/contact"><i class="fa fa-caret-right"></i> &nbsp; Contact us</a></li>
+                  
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="link-area">
+                    <h4>DOCUMENTATION</h4>
+                    <ul>
+                    <li><a href="terms-and-conditions"><i class="fa fa-caret-right"></i> &nbsp; Terms of service</a></li>
+                    <li><a href="privacy-policy"><i class="fa fa-caret-right"></i> &nbsp; Privacy policy</a></li>
+                    <li><a href="refund-policy"><i class="fa fa-caret-right"></i> &nbsp; Refund policy</a></li>
+                    <li><a href="pricing"><i class="fa fa-caret-right"></i> &nbsp; Pricing</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+				<div class="col-xs-12 col-sm-12 col-md-12 mt-2 mt-sm-5">
+					<ul class="list-unstyled list-inline social text-center">
+						<li class="list-inline-item"><a href="https://facebook.com/amplifihub"><i class="fa fa-facebook fa-2x"></i></a></li>
+						<li class="list-inline-item"><a href="https://twitter.com/amplifihub"><i class="fa fa-twitter fa-2x"></i></a></li>
+						<li class="list-inline-item"><a href="https://instagram.com/amplifihub"><i class="fa fa-instagram fa-2x"></i></a></li>
+						<li class="list-inline-item"><a href="javascript:void();"><i class="fa fa-youtube fa-2x"></i></a></li>
+					</ul>
+				</div>
+				</hr>
+			</div>
+    </div>
+</section>
+
+<section class="index-social">
+    <div class="container">
+    <div class="row index-social-link text-center">
+        <p class="copy-c">Copyright &copy;  <?= date('Y') ?> AmplifiHub</p>
+        </div>
+        </div>
+</section>
+
+
+  <div class="row" id="playerfooter">
+    <!--div class="col-lg-1">
+    <img class="cover" src="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/thumbnail-cover.png" alt="">
+  </div-->
+    <div class="col-xs-12 col-lg-12">
+         <div id="mainwrap">
+            <div id="nowPlay">
+                <span class="left" id="npAction">Paused...</span>
+                <span class="right" id="npTitle"></span>
+            </div>
+            <div id="audiowrap">
+                <div id="audio0">
+                    <audio preload id="audio1" controls="controls">Your browser does not support HTML5 Audio!</audio>
+                </div>
+               
+    <a id="btnPrev"><i class="fa fa-backward"></i></a>
+    <a id="btnNext"><i class="fa fa-forward"></i></a>
+               
+            </div>
+            <div id="plwrap">
+               
+            </div>
+        </div>
+<!--      <div class="audio-player">
+      <h1>Demo - Preview Song</h1>
+    <audio id="audio-player" src="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/beat_name/Kiss-Daniel-Sofa.mp3" type="audio/mp3" controls="controls"></audio>
+  </div>-->
+   </div>
+ </div>
+      <?= $this->Form->hidden('carturl',['id'=>'carturl','default'=>$this->Url->build(['controller'=>'carts','action'=>'add'])]); ?>
+
+          <?= $this->Form->hidden('licenseurl',['id'=>'licenseurl','default'=>$this->Url->build(['controller'=>'stores','action'=>'loadlicense'])]); ?>
+   
+      
+   
+    <div id="modal" class="modal">
+        <div class="modal-dialog animated">
+            <div class="modal-content">
+                <form class="form-horizontal" method="get">
+                    <div class="modal-header">
+                        <strong>Select a Package</strong>
+                    </div>
+
+                    <div class="modal-body">
+                       <div id="message" style="display: none;">
+            <div class="alert alert-success">
+                <p>Successfully added you can continue shopping</p>
+            </div> 
+            </div>
+            <div class="row" style="padding: 0px 15px;">
+
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="lease">
+        </div>
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="premium">
+        </div>
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="exclusive">
+        </div>
+</div>
+            
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary"
+                          type="submit" onclick="modal.close();return false;">
+                            Close
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/html5media/1.1.8/html5media.min.js'></script>
+<script src='//cdnjs.cloudflare.com/ajax/libs/plyr/2.0.18/plyr.js'></script>
+
+
+<?= $this->Html->script('/vendor/magnific-popup/jquery.magnific-popup') ?>
+<!-- Bootstrap core JavaScript -->
+<?= $this->Html->script('/vendor/popper/popper.min') ?>
+<?= $this->Html->script('/vendor/scrollreveal/scrollreveal.min') ?>
+
+<!-- Plugin JavaScript -->
+<?= $this->Html->script('/vendor/jquery-easing/jquery.easing.min') ?>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<?= $this->Html->script('creative.min') ?>
+<?= $this->Html->script('typingEffect') ?>
+
+<script>
+$('#typed').typing({
+        strings: ['African Beats','African Music Makers'],
+        color: 'white',
+        loopCount: 100
+
+    });
+</script>
+    <!-- Custom scripts for this template -->
+    <script type="text/javascript">
+    jQuery('#term').autocomplete({
+        source:'Stores/getAll',
+        minLength: 2
+    });
+   
+</script>
+ <script type="text/javascript">
+    var modal = new RModal(
+                document.getElementById('modal')
+               
+            );
+    
+    $( window ).load(function(){
+        
+
+      $(".addtocart").click(function(){
+         
+        var url = $('#licenseurl').val();
+        var id = $(this).attr('data-id');
+        console.log(id);
+
+        console.log(url);
+
+$.ajax({
+   url: url,
+   data: {
+      id:id
+   },
+   error: function() {
+       // $('#info').html('<p>An error has occurred</p>');
+   },
+  // dataType: 'jsonp',
+   success: function(data) {
+    //console.log(data);
+             var value = jQuery.parseJSON(data);
+      //   console.log(value);
+         if(value[0]['lease_price'] > 0){
+         $('#lease').html("<strong> Lease:</strong> &#8358;" + value[0]['lease_price']+ "<br/><span class='badge addcart1' id='" + value[0]['id'] +"' data='" + value[0]['lease_price'] + "' data1 = 'lease'><i class='fa fa-cart-plus' aria-hidden='true'></i> add to cart</span><br>");
+        }
+       if(value[0]['premium_price'] > 0){
+         $('#premium').html("<strong> Premium:</strong> &#8358;" + value[0]['premium_price']+ "<br/><span class='badge addcart1' id='" + value[0]['id'] +"' data='" + value[0]['premium_price'] + "' data1 = 'premium'><i class='fa fa-cart-plus' aria-hidden='true'></i> add to cart</span><br>");
+          }
+
+          if(value[0]['exclusive_price'] > 0){
+         $('#exclusive').html("<strong> Exclusive:</strong> &#8358;" + value[0]['exclusive_price']+ "<br/><span class='badge addcart1' id='" + value[0]['id'] +"' data='" + value[0]['exclusive_price'] + "' data1 = 'lease'><i class='fa fa-cart-plus' aria-hidden='true'></i> add to cart</span><br>");
+    }
+         //console.log(value);
+         //console.log(value[0]['id']);
+
+           setTimeout(function(){
+     modal.open();
+
+    }, 1000);
+   },
+   type: 'GET'
+});
+
+
+
+
+
+    });
+    });
+    
+    $(document).on('click', '.addcart1', function(){
+
+    console.log("Am in here like now");
+       var tis = $(this),
+            url = $('#carturl').val(),
+            id = tis.attr('id'),
+            price = tis.attr('data'),
+            license = tis.attr('data1'),
+            trans_ref = 'beatstore-'+Math.floor((Math.random() * 1000000000) + 1);
+        //alert(id);
+        $.post(url,{id:id,price:price,license:license,trans_ref:trans_ref},function(data){
+            console.log("Am here too");
+            $('#cart-counter').text(data);
+            $('#cart-mob').text(data);
+            $('#message').fadeIn(100).delay(1000).fadeOut(100);
+        });
+});
+    </script>
+<!--<script type="text/javascript">
+ $( ".btnisition" ).each(function(index) {
+    $(this).on("click", function(e){
+        e.preventDefault();
+        var $this = $(this);
+        var data = $(this).attr('id');
+        var dataType = $(this).attr('data-type'); 
+         var audio = document.getElementById('audio');
+         $(audio).attr('src', data);
+          audio.play();
+            audio.currentTime = 0;
+        });
+        
+    });
+</script>-->
+
+
+
+<script type="text/javascript">
+    
+    $( "a.play-wrap2" ).each(function(index) {
+    $(this).on("click", function(e){
+        
+    
+        e.preventDefault();
+        var $this = $(this);
+        var data = $(this).attr('data-id');
+        var dataType = $(this).attr('data-type'); 
+        var dataName = $(this).attr('data-name'); 
+        var dataUser = $(this).attr('data-user');
+         var audio = document.getElementById('audio1');
+         var title = document.getElementById('npTitle');
+         var foo = document.createTextNode("\u00A0");
+        // var titleContent = dataName.length < 14? dataName+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;": dataName;
+        var titleContent = dataName + ".. By " + dataUser + ".."; 
+       // console.log(titleContent);
+         
+         $(title).html(titleContent);
+         $(audio).attr('src', data);
+          audio.play();
+            audio.currentTime = 0;
+            
+            var parent = $this.closest('playimage').find('.pause-wrap2').removeClass('hide').addClass('show');
+            //console.log(parent);
+           
+           
+          $('.play-wrap2').removeClass('hide').addClass('show');
+            $('.pause-wrap2').removeClass('show').addClass('hide');
+            $this.removeClass('show').addClass('hide');
+            $this.closest('.playimage').find('.pause-wrap2').removeClass('hide').addClass('show');
+            //$this.siblings().removeClass('hide').addClass('show');
+          
+    });
+    }
+    );
+    
+      $( ".pause-wrap2" ).each(function(index) {
+    $(this).on("click", function(e){
+        e.preventDefault();
+        var $this = $(this);
+        var audio = document.getElementById('audio1');
+        audio.pause();
+        
+         $('.play-wrap2').removeClass('hide').addClass('show');
+             $('.pause-wrap2').removeClass('show').addClass('hide');
+            
+            });
+
+});
+
+         
+    </script>
+    <script type="text/javascript">
+  
+
+jQuery(function ($) {
+    'use strict'
+    var supportsAudio = !!document.createElement('audio').canPlayType;
+    <?php
+        $tracks = [];
+        foreach ($promoted as  $key => $promo){
+          $tracks[] = array('track'=> ($key +1), 'name'=> substr($promo->name,0, 10)." by ". substr($promo->user->aka, 0, 10), 'duration' => $promo->length,'file'=> pathinfo($promo->lease_name, PATHINFO_FILENAME));  
+        }
+    ?>
+            console.log("Am here");
+            console.log(<?php echo json_encode($tracks);?>);
+    if (supportsAudio) {
+        var index = 0,
+            playing = false,
+            mediaPath = 'https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/',
+            extension = '',
+            tracks = <?php echo json_encode($tracks);?>,
+            buildPlaylist = $(tracks).each(function(key, value) {
+                var trackNumber = value.track,
+                    trackName = value.name,
+                    trackDuration = value.duration;
+                if (trackNumber.toString().length === 1) {
+                    trackNumber = '0' + trackNumber;
+                }
+                $('#plList').append('<li><div class="plItem"><span class="plNum">' + trackNumber + '.</span><span class="plTitle" id="plt">' + trackName + '</span><span class="plLength">' + trackDuration + '</span></div></li>');
+            }),
+            trackCount = tracks.length,
+            npAction = $('#npAction'),
+            npTitle = $('#npTitle'),
+            audio = $('#audio1').on('play', function () {
+                playing = true;
+                npAction.text('Now Playing...');
+            }).on('pause', function () {
+                playing = false;
+                npAction.text('Paused...');
+            }).on('ended', function () {
+                npAction.text('Paused...');
+                if ((index + 1) < trackCount) {
+                    index++;
+                    loadTrack(index);
+                    audio.play();
+                } else {
+                    audio.pause();
+                    index = 0;
+                    loadTrack(index);
+                }
+            }).get(0),
+            btnPrev = $('#btnPrev').on('click', function () {
+                if ((index - 1) > -1) {
+                    index--;
+                    loadTrack(index);
+                    if (playing) {
+                        audio.play();
+                    }
+                } else {
+                    audio.pause();
+                    index = 0;
+                    loadTrack(index);
+                }
+            }),
+            btnNext = $('#btnNext').on('click', function () {
+                if ((index + 1) < trackCount) {
+                    index++;
+                    loadTrack(index);
+                    if (playing) {
+                        audio.play();
+                    }
+                } else {
+                    audio.pause();
+                    index = 0;
+                    loadTrack(index);
+                }
+            }),
+            li = $('#plList li').on('click', function () {
+                var id = parseInt($(this).index());
+                if (id !== index) {
+                    playTrack(id);
+                }
+            }),
+            loadTrack = function (id) {
+                $('.plSel').removeClass('plSel');
+                $('#plList li:eq(' + id + ')').addClass('plSel');
+                npTitle.text(tracks[id].name);
+                index = id;
+                audio.src = mediaPath + tracks[id].file + extension;
+            },
+            playTrack = function (id) {
+                loadTrack(id);
+                audio.play();
+            };
+        extension = audio.canPlayType('audio/mpeg') ? '.mp3' : audio.canPlayType('audio/ogg') ? '.ogg' : '';
+        loadTrack(index);
+    }
+});
+
+// initialize plyr
+plyr.setup($('#audio1'), {});
+
+
+
+        </script>
+   
+  <?= $this->Html->script('easy_background.min') ?>   
+
+<script>(function(d,a){function c(){var b=d.createElement("script");b.async=!0;b.type="text/javascript";b.src=a._settings.messengerUrl;b.crossOrigin="anonymous";var c=d.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}window.kayako=a;a.readyQueue=[];a.newEmbedCode=!0;a.ready=function(b){a.readyQueue.push(b)};a._settings={apiUrl:"https://amplifihub.kayako.com/api/v1",messengerUrl:"https://amplifihub.kayakocdn.com/messenger",realtimeUrl:"wss://kre.kayako.net/socket"};window.attachEvent?window.attachEvent("onload",c):window.addEventListener("load",c,!1)})(document,window.kayako||{});</script>
+<script type="text/javascript">
+    easy_background("header",
+
+      {
+        slide: ["img/slides/1stslide.jpg", "img/slides/2ndslide.jpg", "img/slides/3rdslide.jpg", "img/slides/4thslide.jpg"],
+
+        delay: [3000, 3000, 3000, 3000]
+      }
+
+
+    );
+  </script>  
+
+</body>
+
+
+</html>

@@ -1,0 +1,248 @@
+
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Store[]|\Cake\Collection\CollectionInterface $stores
+ */
+?>
+<h1 style="color: #ffffff;"><?= __('The African Beats Hub') ?></h1>
+
+<div class='row'>
+    <div class='col-md-8'>
+        <div class="row">
+    <div class="col-md-6">
+             <?= $this->Form->create(null,[
+    'url' => '/beat-hub'
+,'type' => 'get']) ?>
+        <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+              <?= $this->Form->control('beats', ['label' => false,'id'=> 'term','class' => ['search-query','form-control'],'placeholder'=> 'Search beats']);?>
+            <span class="input-group-btn">
+                <button class="btn btn-danger" type="submit"> <span class=" glyphicon glyphicon-search"></span> </button>
+            </span> </div>
+            </div>
+        </div>
+        <?= $this->Form->end() ?>
+    </div>
+            <div class="col-md-6">
+                <div class="select">
+                    
+                    <select class="form-control" id="genre">
+                    <option value="">Or Sort by Genre</option>
+                    <?php foreach ($genres as $genre):?>
+                    <option <?php if($genreId == $genre->id){ echo 'selected';}?> value="<?= h($genre->id);?>"><?= h($genre->genre);?></option>
+                    <?php endforeach;?>
+  
+      </select>
+                </div>            
+
+                              
+            </div>
+</div>
+        <div class="row" style="padding: 10px 22px;">
+            <div class="tbckgrd">
+<div class="stores index large-9 medium-8 columns content" id="storeHolder" >
+    
+    <?php if(count($stores) == 0):?>
+    <h2 style="color: white;">No Result Found</h2>
+    <?php endif;?>
+
+      <?php foreach ($stores as $store): ?>
+<div class="row shopList beatslist"    id="<?php echo $store->id;?>" style="padding: 0px 30px 0px 0px;">
+
+
+<div class="row white">
+
+  <div class="col-xs-2 col-sm-1 col-md-1 beat_image">
+      <div class="control-wrap">
+      <a href="#" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($store->lease_name);?>"
+         data-type="<?=h($store->lease_type);?>" 
+         data-name="<?= h(substr($store->name, 0, 10));?>"
+         data-user="<?= h(substr($store->user->aka, 0, 10));?>"
+         class="play-wrap show">
+         <?= $this->Html->image('video-play-128.png',['class'=>['img-responsive','play']]);?>
+         
+      </a>
+      <a class="pause-wrap hide">
+           <?= $this->Html->image('pause-128.png',['class'=> ['img-responsive','pause']]); ?>
+      </a>
+      </div>
+     
+  </div>
+    <div class="col-xs-5 col-md-2 coverImage">
+        <?= $this->Html->image("https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/$store->cover",['class'=>'img-responsive']);?>
+    </div>
+
+  <div class="col-xs-6 col-sm-5 col-md-6 beat_name">
+      <div class="row">
+          <div class="col-xs-12 col-sm-12 col-md-6">
+               <h4 style="margin-top:11px"> <?php echo (strlen($store->name) > 8) ? substr($store->name,0,8). ".." : $store->name;?>&nbsp;</h4>
+    <h6 class="remove-pad" style="margin-top: 15px;padding: 0px;color: #959595;">
+           <?= (isset($store->_matchingData['Genres']->genre)) ? h($store->_matchingData['Genres']->genre) : h($store->genre->genre) ; ?> ||  <?= h($store->bpm) ?>bpm</h6>
+
+          </div>
+      <div class="col-xs-12 col-sm-12 col-md-6">
+             <div class="priceAndCart col-xs-6 col-sm-6 col-md-3 genre">
+      <h6>By  <?= $this->Html->link(h($store->user->aka),'/mystore/'.$store->user->aka); ?></h6>
+  </div>
+      </div>
+  </div>
+     
+  </div>
+
+    
+ 
+
+  <div class="col-xs-4 col-md-3 cartbuy cart_and_price">
+    <div class=""> 
+        <a href="#" class="btn btn-primary btn-danger btn-cart" style="min-width:112px;"><span class="glyphicon glyphicon-shopping-cart"></span> &nbsp; &#8358;<?= $store->lease_price ? h(number_format($store->lease_price)): h(0) ?>+</a>
+           </div>
+  </div>
+  <div class="col-xs-12 col-md-12 licence" style="margin-top: 21px;">
+      <div class="row">
+
+          <div class="col-xs-6 col-md-4" style="padding: 0px">
+              <div class="invisiblePrices">
+      <?= empty($store->lease_price) ? '<strong class="priceHolderList"> Lease:</strong> free<br/>' .$this->Html->link('Free download',"https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/".$store->lease_name, ['class' => 'badge badge-danger', 'target' => '_blank','download']) : '<strong class="priceHolderList"> Lease:</strong> &#8358; '.h($store->lease_price).'<br/><span class="badge addcart" id="'. h($store->id).'" data=" '.$store->lease_price.' " data1 = "lease"><i class="fa fa-cart-plus" aria-hidden="true"></i> add to cart</span><br>' ; ?>
+        </div>
+          </div>
+        <div class="col-xs-6 col-md-4" style="padding: 0px">
+            <div class="<?= empty($store->premium_price)? '' :'invisiblePrices'?>">
+      <?= empty($store->premium_price) ? '' : '<strong class="priceHolderList"> Premium:</strong> &#8358; '.h($store->premium_price).'<br/><span class="badge addcart" id="'. h($store->id).'" data=" '.$store->premium_price.' " data1 = "premium"><i class="fa fa-cart-plus" aria-hidden="true"></i> add to cart</span><br>' ; ?>
+        </div>
+        </div>
+          
+        <div class="col-xs-6 col-md-4" style="padding: 0px">
+            <div class="<?= empty($store->exclusive_price)? '' :'invisiblePrices'?>">
+      <?= empty($store->exclusive_price) ? '' : '<strong class="priceHolderList"> Exclusive:</strong> &#8358; '.h($store->exclusive_price).'<br/><span class="badge addcart" id="'. h($store->id).'" data=" '.$store->exclusive_price.' " data1 = "exclusive"><i class="fa fa-cart-plus" aria-hidden="true"></i> add to cart</span>' ; ?>
+        </div>
+        </div>
+</div>
+        </div>
+    
+  </div>
+
+</div>
+  <?php endforeach; ?>
+<!--  <div class="paginator">
+    <ul class="pagination">
+      
+        <?= $this->Paginator->first('<< ' . __('first')) ?>
+        <?= $this->Paginator->prev('< ' . __('previous')) ?>
+        <?= $this->Paginator->numbers() ?>
+
+        <?= $this->Paginator->next(__('next') . ' >') ?>
+        <?= $this->Paginator->last(__('last') . ' >>') ?>
+
+         </ul>
+    <span class="pull-right"><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></span>
+</div>-->
+</div>
+                
+                <div id="ajax-load" style="display:none;">
+                <?= $this->Html->image("loader.gif",['class'=>['img-responsive'],'style' => ['margin: 0 auto']]);?> Loading more beats
+            </div>  
+                
+                <div id="noBeats">
+                    <p>No more Beats</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <article>
+            <div class="beat-cart">
+            <div class="head">
+                <h2>Beat Cart</h2>
+            </div>
+                <div class="cart-body">
+                    <div class="row" id="cart-wrap">
+                       
+                       
+                    </div>
+                </div>
+            <div class="checkout-wrapper">
+            <?= $this->Html->link('Checkout',['controller'=>'Carts','action'=>'view'],['class'=>'btn btn-success']) ?>
+            </div>
+            </div>
+            
+            <div class="promoted-beats">
+            <div class="head">
+                <h2>Promoted beats</h2>
+            </div> 
+                <div class="promoted-body">
+                    <div class="row">
+                       
+                        <?php foreach ($promoted as $promo):?>
+                        
+                         <div class="col-xs-4 col-md-4 beat-hold">
+                            <div class="beat-wrap">
+                               <?php echo $this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/'.$promo['cover'],['class'=>'img-responsive','style' => 'width:90px!important;height:90px!important;']);?>
+                                <a class="addtocart btn btn-danger cart-btn" data-id="<?php echo $promo['id'];?>"><span class="glyphicon glyphicon-shopping-cart"></span></a>
+                            </div>
+                             <div class="control-wrap control-wrap2">
+      <a href="#" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($promo['lease_name']);?>"
+         data-type="<?= h($promo['lease_type']); ?>" 
+         data-name="<?= h(substr($promo['name'], 0, 10));?>"
+         data-user="<?= h(substr($promo['user']['aka'], 0, 10));?>"
+         class="play-wrap show">
+         <?= $this->Html->image('video-play-128.png',['class'=>['img-responsive','play']]);?>
+         
+      </a>
+      <a class="pause-wrap hide">
+           <?= $this->Html->image('pause-128.png',['class'=> ['img-responsive','pause']]); ?>
+      </a>
+      </div>
+                        </div>
+      
+                        <?php endforeach;?>
+                       
+                    </div>
+                </div>
+                
+            </div>
+        </article>
+    </div>
+</div>
+
+    <div id="modal" class="modal">
+        <div class="modal-dialog animated">
+            <div class="modal-content">
+                <form class="form-horizontal" method="get">
+                    <div class="modal-header">
+                        <strong>Select a Package</strong>
+                    </div>
+
+                    <div class="modal-body">
+                       <div id="message" style="display: none;">
+            <div class="alert alert-success">
+                <p>Successfully added you can continue shopping</p>
+            </div> 
+            </div>
+            <div class="row" style="padding: 0px 15px;">
+
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="lease">
+        </div>
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="premium">
+        </div>
+                <div class="col-xs-6 col-md-4" style="padding: 0px" id="exclusive">
+        </div>
+</div>
+            
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary"
+                          type="submit" onclick="modal.close();return false;">
+                            Close
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+  
+</div>
+
+    

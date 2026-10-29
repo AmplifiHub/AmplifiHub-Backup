@@ -1,0 +1,1160 @@
+<?php 
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\Collection\Collection;
+use Cake\ORM\TableRegistry;
+use Cake\Network\Session;
+use Cake\I18n\Time;
+use Cake\View\Helper\PaginatorHelper;
+
+
+/**
+ * Stores Controller
+ *
+ *
+ * @method \App\Model\Entity\Store[] paginate($object = null, array $settings = [])
+ */
+class StoresController extends AppController {
+    public function initialize() {
+        parent::initialize();
+        $this->loadComponent('Paystack');
+        
+    }
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function beats() {
+
+        $this->loadModel('Carts');
+        $this->loadModel('Users');
+        $this->loadModel('Stores');
+         $this->loadModel('Mixmasterings');
+          $this->loadModel('Subscriptions');
+          $this->loadModel('Genres');
+          $this->loadModel('Artistes');
+          $this->loadModel('PageBanner');
+          $this->loadModel('Users');
+
+        $topProducer =  $this->Users->find('all',[
+            'contain' => ['Artistes','MixMasterings','Songwriters','Directors','Stores'],
+            'conditions' => ['Users.top_producer'=>1],
+            'limit' => 3,
+             
+          ]);
+        
+
+        $cart = $this->Carts->getCount();
+
+        $this->loadModel('Genres');
+        $this->loadModel('PageBanner');
+        //$this->viewBuilder()->theme('Panel')->layout('store');
+        $this->viewBuilder()->theme('Panel')->layout('newdesign');
+        $display = 'show';
+        $paginate = [
+            'limit' => 10,
+        ];
+        $shop = 'hide';
+        $item = 0;
+
+        $carts = $this->Carts->readProduct();
+        //debug($carts);
+        $products = [];
+        if (null != $carts) {
+            foreach ($carts as $productId => $count) {
+                $product = $this->Stores->get($count['id']);
+                $product['count'] = $count;
+                $product['price'] = $count['price'];
+                $product['license'] = $count['license'];
+                $products[] = $product;
+            }
+        }
+        $promotedquery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.promoted' => 'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+        $promoted = $promotedquery->toArray();
+        
+        $trendingQuery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.trending' => 1],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+        $trendingBid = $trendingQuery->toArray();
+//        print_r($trendingBid);
+//        die();
+        // debug($promoted);
+        $carts = $this->Stores->readProduct();
+        //debug($carts);
+        if (count($carts) < 1) {
+            $shop = 'show';
+            $item = count($carts);
+        }
+
+        $genres = $this->Genres->find('all', [
+            'order' => ['Genres.genre' => 'ASC']
+        ]);
+
+        $query = $this->Stores->find('all');
+        $query->contain(['Genres', 'Users']);
+        $query->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query->order(['Stores.created' => 'DESC'])->limit(10);
+        //debug(trim($this->request->query('genre')));
+        $genreId = "";
+        if (!empty($this->request->query('beats'))) {
+            $search = $this->request->query('beats');
+            $query->where(['Stores.name Like' => $search . '%']);
+
+            $stores = $query; //$this->paginate($query,$paginate);
+        } elseif (!empty($this->request->query('genre'))) {
+            $genreId = $this->request->query('genre');
+            $query->where(['Genres.id ' => $genreId]);
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } elseif (!empty($this->request->query('term'))) {
+            $term = $this->request->query('term');
+
+//            $query->where(function (QueryExpression $exp) {
+//        $orConditions = $exp->or_(['Stores.name LIKE' => $term . '%'])
+//            ->eq(['Users.fullname LIKE' => $term . '%'])
+//                ->eq(['Genres.genre LIKE' => $term . '%']);
+//        return $exp
+//        ->add($orConditions);
+//        });
+            $query->where(['Stores.name LIKE' => $term . '%'])
+                    ->orWhere(['Users.aka LIKE' => $term . '%'])
+                    ->orWhere(['Genres.genre LIKE' => $term . '%']);
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } else {
+            $stores = $query; //$this->paginate($query,$paginate);
+            //debug($stores);
+        }
+//debug($genreId);
+        $query1 = $this->Stores->find('all');
+        $query1->contain(['Genres', 'Users']);
+        $query1->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query1->order(['Stores.created' => 'DESC'])
+        ;
+        $promoted1 = $query1->toArray();
+        $role = $this->Auth->user('role');
+        $banner = $this->PageBanner->find('all', ['conditions' => ['status' => 1, 'page' => 2]])->first();
+
+        //debug($products);
+        $title = "African Afrobeat Instrumentals For Sale | Dancehall | Beats | Afropop | Afro Trap - AmplifiHub Beat Hub";
+        $description = "African Afrobeat Instrumentals For Sale | Dancehall | Beats | Afropop | Afro Trap | Download Nigerian Beats. Buy afro beats today, we got the coolest African dancehall Beats";
+        $AmpKeyword = "Afrobeat Instrumental for sale, Afro beat, Afro instrumental beats, buy afrobeat instrumentals, naija beats download, afro pop beats, download afrobeat instrumentals, download Nigerian beats, Nigerian Afrobeat Instrumental, African beats, buy African beats, afro trap beats, afro hip hop beats download, 9ja beats instrumental, Nigerian beats, South African beats, Afrobeat Instrumental";
+        $this->set(compact('topProducer','trendingBid','AmpKeyword', 'title', 'description', 'stores', 'role', 'display', 'shop', 'item', 'genres', 'genreId', 'cart', 'promoted', 'promoted1', 'products','banner'));
+        $this->set('_serialize', ['stores']);
+        /* $session = new Session();
+          debug($session->read('cart')); */
+    }
+
+    public function promotebeats() {
+        $this->loadModel('Carts');
+        $this->loadModel('Beatstopromote');
+
+        $cart = $this->Carts->getCount();
+        $user = $this->Auth->user();
+
+
+        $beatsToPromote = array();
+
+        if ($user['role'] == 'user') {
+
+            $this->paginate = [
+                'conditions' => ['Stores.user_id' => $user['id']],
+                'contain' => ['Stores'],
+                'order' => ['Beatstopromote.created' => 'DESC']
+            ];
+            $beatsToPromote = $this->paginate($this->Beatstopromote);
+        } else {
+            $this->paginate = [
+                'contain' => ['Stores'],
+                'order' => ['Beatstopromote.created' => 'DESC']
+            ];
+            $beatsToPromote = $this->paginate($this->Beatstopromote);
+        }
+
+
+        $userBeats = $this->Stores->find('all')
+                ->select(['Stores.id', 'Stores.name'])
+                ->order(['Stores.created' => 'DESC'])
+                ->where(['Stores.user_id' => $user['id']]);
+
+
+
+
+        //debug($beatsToPromote->toArray());
+        $this->set(compact('cart', 'user', 'beatsToPromote', 'userBeats'));
+        $this->set('_serialize', ['beatsToPromote']);
+    }
+
+    public function loadCart() {
+
+        $this->autoRender = false;
+        $this->loadModel('Carts');
+        $carts = $this->Carts->readProduct();
+        $products = [];
+        if (null != $carts) {
+            foreach ($carts as $productId => $count) {
+                $product = $this->Stores->get($count['id']);
+                $product['count'] = $count;
+                $product['price'] = $count['price'];
+                $product['license'] = $count['license'];
+                $products[] = $product;
+            }
+
+            //debug($products);
+
+            foreach ($products as $product) {
+                echo " <div class='col-xs-6 col-md-4' style='margin-bottom:10px;'>
+                            <div class='cartImgWrap'>
+                            <img src='https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/" . $product->cover . "'class='img-responsive' style='width:90px; height: 90px;'>
+                                <p>" . substr($product->name, 0, 10) . "..</p>
+                                <p>" . $product->license . "</p>
+                                <p>₦" . $product->price . "</p>
+                            </div>
+                        </div> ";
+            }
+        }
+    }
+
+    public function loadlicense() {
+        $this->autoRender = false;
+        $id = $this->request->query('id'); //$this->request->data['id'];
+        //echo "hello";
+
+        $storeId = $this->Stores->findById($id);
+
+        //$this->Stores->find('all', [
+        //'contain' => false,
+        //'fields' => ['Stores.id','Stores.lease_price','Stores.premium_price','Stores.exclusive_price'], 
+        //'conditions' => [
+        // 'Stores.id' => $id
+        //],
+        //'order' => ['Stores.id' => 'DESC']
+        //]);
+        // $row = $storeId->first();
+
+        echo json_encode($storeId);
+    }
+
+    public function getAllBeats() {
+
+        //  if ($this->requrest->is('ajax')) {
+        $this->autoRender = false;
+
+        $resultsA = [];
+
+        $name = $this->request->query['term'];
+
+
+        $results1 = $this->Stores->find('all', [
+            'fields' => ['DISTINCT Stores.name'],
+            'conditions' => [
+                'Stores.name LIKE' => $name . '%',
+            ]
+        ]);
+
+
+        foreach ($results1 as $result) {
+            $resultsA[] = $result['DISTINCT Stores']['name'];
+        }
+
+        echo json_encode($resultsA);
+    }
+
+    public function getAllUserBeats() {
+
+        $this->autoRender = false;
+
+        $resultsA = [];
+
+        $name = $this->request->query['term'];
+        $query = $this->request->query['name'];
+
+
+        $results1 = $this->Stores->find('all', [
+            'contain' => ['Users'],
+            'fields' => ['DISTINCT Stores.name'],
+            'conditions' => [
+                'Stores.name LIKE' => $name . '%',
+                'Users.aka' => $query
+            ]
+        ]);
+
+
+        foreach ($results1 as $result) {
+            $resultsA[] = $result['DISTINCT Stores']['name'];
+        }
+
+        echo json_encode($resultsA);
+    }
+
+    public function getAll() {
+        $this->loadModel('Genres');
+        $this->loadModel('Users');
+        //  if ($this->requrest->is('ajax')) {
+        $this->autoRender = false;
+        $resultsArr = [];
+        $resultsA = [];
+        $resultsB = [];
+        $resultsC = [];
+        $name = $this->request->query['term'];
+
+
+        $results1 = $this->Users->find('all', [
+            'fields' => ['DISTINCT Users.fullname'],
+            'conditions' => [
+                'Users.fullname LIKE' => $name . '%',
+            ]
+        ]);
+
+
+        foreach ($results1 as $result) {
+            $resultsA[] = $result['DISTINCT Users']['fullname'];
+        }
+
+        //debug($resultsA);        
+
+
+
+        $results2 = $this->Stores->find('all', [
+            'fields' => ['DISTINCT Stores.name'],
+            'conditions' => [
+                'Stores.name LIKE' => $name . '%'
+            ]
+        ]);
+
+        foreach ($results2 as $result) {
+            $resultsB[] = $result['DISTINCT Stores']['name'];
+        }
+
+
+        $results3 = $this->Genres->find('all', [
+            'fields' => ['DISTINCT Genres.genre'],
+            'conditions' => [
+                'Genres.genre LIKE' => $name . '%',
+            ]
+        ]); //->all();
+        //debug($results3);
+
+
+        foreach ($results3 as $results) {
+            $resultsC[] = $results['DISTINCT Genres']['genre'];
+        }
+
+        //debug($resultsC);
+        //foreach ($results as $result) {
+        //      $resultsArr[] =['label' => $result['full_name'], 'value' => $result['id']];
+        //}
+        // print_r($results2);
+
+
+        $resultsArr = array_merge($resultsA, $resultsB, $resultsC);
+
+        echo json_encode($resultsArr);
+        //      echo json_encode($results); 
+        //  }
+    }
+
+    /**
+     * Mystore method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function mystore($id = null) {
+
+        $this->viewBuilder()->theme('Panel')->layout('store');
+        $this->viewBuilder()->theme('Panel')->layout('newdesign');
+        $id = $this->request->getParam('id');
+        $this->loadModel('Genres');
+
+
+        $this->loadModel('Carts');
+        $this->loadModel('Users');
+        $this->loadModel('Mixmasterings');
+        $cart = $this->Carts->getCount();
+
+        $carts = $this->Carts->readProduct();
+        //debug($carts);
+        $products = [];
+        if (null != $carts) {
+            foreach ($carts as $productId => $count) {
+                $product = $this->Stores->get($count['id']);
+                $product['count'] = $count;
+                $product['price'] = $count['price'];
+                $product['license'] = $count['license'];
+                $products[] = $product;
+            }
+        }
+
+
+        $display = 'show';
+        $paginate = [
+            'limit' => 10
+        ];
+
+        $shop = 'hide';
+        $item = 0;
+
+        $carts = $this->Stores->readProduct();
+
+        if (count($carts) < 1) {
+            $shop = 'show';
+            $item = count($carts);
+        }
+
+        $userProfile = $this->Users->find('all', [
+            'contain' => [],
+            'conditions' => ['Users.aka' => $id]
+        ])->first();
+
+        $promotedquery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.promoted' => 'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+
+        $promoted = $promotedquery->toArray();
+
+
+        $query1 = $this->Stores->find();
+        $query1->matching(
+                'Users', function($x) use($id) {
+            return
+
+                    $x->where(['OR' => [['Users.id ' => $id], ['Users.aka' => $id]]]);
+        });
+        $query1->contain(['Users', 'Genres']);
+
+
+
+        $stores = $query1->all();
+
+        $mixmasterings = $this->Mixmasterings->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Users.aka' => $id]
+        ]);
+
+        //debug($query2);
+
+
+
+        $genres = $this->Genres->find('all', [
+            'order' => ['Genres.genre' => 'ASC']
+        ]);
+
+        $query = $this->Stores->find('all');
+        $query->contain(['Genres', 'Users']);
+        $query->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query->order(['Stores.created' => 'DESC'])->limit(7);
+
+        //debug(trim($this->request->query('genre')));
+        $genreId = "";
+        if (!empty($this->request->query('beats'))) {
+            $search = trim($this->request->query('beats'));
+			$query->where(['Stores.name LIKE' => '%'.$search.'%'])
+                    ->orWhere(['Users.aka LIKE' => '%'.$search.'%'])
+                    ->orWhere(['Genres.genre LIKE' => '%'.$search.'%']);
+            $query-> where(['Users.aka' => $id]);
+
+            $stores = $query; //$this->paginate($query,$paginate);
+        } elseif (!empty($this->request->query('genre'))) {
+            $genreId = $this->request->query('genre');
+            $query->where(['Genres.id ' => $genreId])
+                    ->where(['Users.aka' => $id]);
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } elseif (!empty($this->request->query('term'))) {
+            $term = $this->request->query('term');
+
+//            $query->where(function (QueryExpression $exp) {
+//        $orConditions = $exp->or_(['Stores.name LIKE' => $term . '%'])
+//            ->eq(['Users.fullname LIKE' => $term . '%'])
+//                ->eq(['Genres.genre LIKE' => $term . '%']);
+//        return $exp
+//        ->add($orConditions);
+//        });
+            $query->where(['Stores.name LIKE' => $term . '%'])
+                    ->where(['Users.aka' => $id]);
+            ;
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } else {
+            $query->where(['Users.aka' => $id]);
+            $stores = $query; //$this->paginate($query,$paginate);
+            //debug($stores);
+        }
+
+        $query5 = $this->Stores->find('all');
+        $query5->contain(['Genres', 'Users']);
+        $query5->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query5->where(['Users.aka' => $id]);
+        $query5->order(['Stores.created' => 'DESC']);
+        $promoted1 = $query5->toArray();
+        //debug($userProfile);
+        //$this->set('genre', $this->Stores->Genres->find());
+        $this->set(compact('stores', 'role', 'display', 'shop', 'genres', 'genreId', 'item', 'id', 'promoted', 'promoted1', 'cart', 'products', 'userProfile', 'mixmasterings'));
+        $this->set('_serialize', ['stores']);
+    }
+
+    public function personalstore($id = null) {
+
+        $this->viewBuilder()->theme('Panel')->layout('personalstore');
+
+        $id = $this->request->getParam('id');
+        $this->loadModel('Genres');
+
+
+        $this->loadModel('Carts');
+        $this->loadModel('Users');
+        $this->loadModel('Mixmasterings');
+        $cart = $this->Carts->getCount();
+
+        $carts = $this->Carts->readProduct();
+        //debug($carts);
+        $products = [];
+        if (null != $carts) {
+            foreach ($carts as $productId => $count) {
+                $product = $this->Stores->get($count['id']);
+                $product['count'] = $count;
+                $product['price'] = $count['price'];
+                $product['license'] = $count['license'];
+                $products[] = $product;
+            }
+        }
+
+
+        $display = 'show';
+        $paginate = [
+            'limit' => 10
+        ];
+
+        $shop = 'hide';
+        $item = 0;
+
+        $carts = $this->Stores->readProduct();
+
+        if (count($carts) < 1) {
+            $shop = 'show';
+            $item = count($carts);
+        }
+
+        $userQuery = $this->Users->find('all', [
+            'contain' => [],
+            'conditions' => ['Users.aka' => $id]
+        ]);
+
+        $userProfile = $userQuery->toArray();
+
+
+
+        $promotedquery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.promoted' => 'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+
+        $promoted = $promotedquery->toArray();
+
+
+        $query1 = $this->Stores->find();
+        $query1->matching(
+                'Users', function($x) use($id) {
+            return
+
+                    $x->where(['OR' => [['Users.id ' => $id], ['Users.aka' => $id]]]);
+        });
+        $query1->contain(['Users', 'Genres']);
+
+
+
+        $stores = $query1->all();
+
+        $mixmasterings = $this->Mixmasterings->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Users.aka' => $id]
+        ]);
+
+        //debug($query2);
+
+
+
+        $genres = $this->Genres->find('all', [
+            'order' => ['Genres.genre' => 'ASC']
+        ]);
+
+        $query = $this->Stores->find('all');
+        $query->contain(['Genres', 'Users']);
+        $query->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query->order(['Stores.created' => 'DESC']);
+
+        //debug(trim($this->request->query('genre')));
+        $genreId = "";
+        if (!empty($this->request->query('beats'))) {
+            $search = $this->request->query('beats');
+            $query->where(['Stores.name Like' => $search . '%'])
+                    ->where(['Users.aka' => $id]);
+
+            $stores = $query; //$this->paginate($query,$paginate);
+        } elseif (!empty($this->request->query('genre'))) {
+            $genreId = $this->request->query('genre');
+            $query->where(['Genres.id ' => $genreId])
+                    ->where(['Users.aka' => $id]);
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } elseif (!empty($this->request->query('term'))) {
+            $term = $this->request->query('term');
+
+//            $query->where(function (QueryExpression $exp) {
+//        $orConditions = $exp->or_(['Stores.name LIKE' => $term . '%'])
+//            ->eq(['Users.fullname LIKE' => $term . '%'])
+//                ->eq(['Genres.genre LIKE' => $term . '%']);
+//        return $exp
+//        ->add($orConditions);
+//        });
+            $query->where(['Stores.name LIKE' => $term . '%'])
+                    ->where(['Users.aka' => $id]);
+            ;
+            $stores = $query; //$this->paginate($query,$paginate); 
+        } else {
+            $query->where(['Users.aka' => $id]);
+            $stores = $query; //$this->paginate($query,$paginate);
+            //debug($stores);
+        }
+
+        $query5 = $this->Stores->find('all');
+        $query5->contain(['Genres', 'Users']);
+        $query5->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query5->where(['Users.aka' => $id]);
+        $query5->order(['Stores.created' => 'DESC']);
+        $promoted1 = $query5->toArray();
+        //debug($userProfile);
+        //$this->set('genre', $this->Stores->Genres->find());
+        $this->set(compact('stores', 'role', 'display', 'shop', 'genres', 'genreId', 'item', 'id', 'promoted', 'promoted1', 'cart', 'products', 'userProfile', 'mixmasterings'));
+        $this->set('_serialize', ['stores']);
+    }
+
+    public function infinityMyStore() {
+
+        $this->autoRender = false;
+        $id = $this->request->query('id');
+        $storeName = $this->request->query('store');
+
+
+        $query = $this->Stores->find('all');
+        $query->contain(['Genres', 'Users']);
+        $query->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query->where(['Users.aka' => $storeName]);
+        $query->where(['Stores.id < ' => $id]);
+        $query->order(['Stores.created' => 'DESC'])->limit(10);
+
+        $stores = $query;
+        echo json_encode($stores);
+    }
+
+    public function infinityStore() {
+
+        $this->autoRender = false;
+        $id = $this->request->query('id');
+
+
+        $query = $this->Stores->find('all');
+        $query->contain(['Genres', 'Users']);
+        $query->select(['Users.id', 'Users.email', 'Users.fullname', 'Users.aka', 'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.lease_type', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre']);
+        $query->where(['Stores.id < ' => $id]);
+        $query->order(['Stores.created' => 'DESC'])->limit(10);
+
+        $stores = $query;
+        echo json_encode($stores);
+    }
+
+    /**
+     * User Store method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function userstore() {
+
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $g = $this->Stores->find('all')->select(['Users.email', 'Users.aka','Stores.play_count' ,'Stores.id', 'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre'])->contain(['Genres', 'Users'])->where(['Stores.user_id' => $this->Auth->user('id')]);
+        $stores = $this->paginate($g);
+        $role = $this->Auth->user('role');
+        $this->set(compact('stores', 'role', 'cart'));
+        $this->set('_serialize', ['stores']);
+    }
+
+    /**
+     * Admin Store method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function admin($id = null, $status = 0) {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        
+        if ($this->request->is('post')) {
+            $articlesTable = TableRegistry::get('Stores');
+            $article = $articlesTable->get($id);  
+            $article->trending = $status;
+            $articlesTable->save($article);
+            return $this->redirect(['action' => 'admin']);
+            
+        }
+        
+        
+        $trendingModel = $this->Stores->find()->contain( ['Genres', 'Users'])->where(['trending' => 1])->all();
+            
+        
+        
+        $g = $this->Stores->find('all')->select(['Users.email', 'Users.aka', 'Stores.id',"Stores.play_count" ,'Stores.name', 'Stores.length', 'Stores.bpm', 'Stores.lease_price', 'Stores.premium_price', 'Stores.exclusive_price', 'Stores.cover', 'Stores.created', 'Stores.lease_path', 'Stores.premium_path', 'Stores.exclusive_path', 'Stores.lease_name', 'Stores.premium_name', 'Stores.exclusive_name', 'Genres.genre'])->contain(['Genres', 'Users']);
+        $stores = $this->paginate($g);
+        $role = $this->Auth->user('role');
+        $this->set(compact('stores', 'role', 'cart','trendingModel'));
+        $this->set('_serialize', ['stores']);
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Store id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null) {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $store = $this->Stores->get($id, [
+            'contain' => ['Genres']
+        ]);
+
+        $this->set('store', $store);
+        $this->set('cart', $cart);
+        $this->set('_serialize', ['store']);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add() { 
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $store = $this->Stores->newEntity();
+
+        $user = $this->Auth->user('id');
+        $now = date('Y-m-d');
+        $now1 = new \DateTime('-30 days');
+
+        $substatus = null;
+        //check the subscription
+        //check if it is still active
+        $checksilver = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_x4pycaeyn4hp7lo']);
+        });
+        if (!$checksilver->isEmpty()) {
+            $tnx_reference = $checksilver->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+
+        $checkgold = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_1aolpmm4rlzsv19']);
+        });
+        if (!$checkgold->isEmpty()) {
+            $tnx_reference = $checkgold->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+
+        $checkplatinum = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_59gb0gsmu5ace70']);
+        });
+        if (!$checkplatinum->isEmpty()) {
+            $tnx_reference = $checkplatinum->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+
+
+
+        $this->loadModel('Users');
+        $userid = $this->Users->find()->where(['id' => $user])->first();
+        //debug($userid);
+        //debug(json_encode($genre, JSON_PRETTY_PRINT));
+        //$this->set('user', $this->Stores->Users->find('list'));
+        $this->set('genre', $this->Stores->Genres->find('list'));
+        $this->set(compact('user'));
+        $this->set(compact('store'));
+        $this->set(compact('genrevalue', 'xclusive', 'premium', 'lease', 'substatus', 'userid', 'cart'));
+        $this->set('_serialize', ['store']);
+    }
+
+    //This method adds beats using ajax
+    public function addBeats() {
+        $store = $this->Stores->newEntity();
+        $this->autoRender = false;
+        $user = $this->Auth->user('id');
+        $now = date('Y-m-d');
+        $now1 = new \DateTime('-30 days');
+
+        $substatus = null;
+        //check the subscription
+        //check if it is still active
+        $checksilver = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_x4pycaeyn4hp7lo']);
+        });
+        if (!$checksilver->isEmpty()) {
+            $tnx_reference = $checksilver->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+
+        $checkgold = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_1aolpmm4rlzsv19']);
+        });
+        if (!$checkgold->isEmpty()) {
+            $tnx_reference = $checkgold->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+
+        $checkplatinum = $this->Stores->Subscriptions->find('all', ['conditions' => ['Subscriptions.user_id' => $user, 'Subscriptions.expiry >=' => $now]])->matching('Plans', function($x) {
+            return $x
+                            ->where(['plan_code' => 'PLN_59gb0gsmu5ace70']);
+        });
+        if (!$checkplatinum->isEmpty()) {
+            $tnx_reference = $checkplatinum->last()->tnx_reference;
+            $substatus = 'active';
+        }
+
+        //  if($this->request->is('post')){
+        //echo json_encode(['error'=> true,'message'=>'You are not allowed to upload beats because you don\'t have an active Producer Subscription.']);    
+        //}
+
+        if ($this->request->is('ajax')) {
+
+            //check to see if user has exceeded or reached the required upload
+            $check = $this->Stores->find('all', ['conditions' => ['user_id' => $user, 'created + INTERVAL 30 DAY > ' => Time::Now(), 'tnx_reference' => @$tnx_reference]]);
+
+            //debug($checkgold->first()->expiry);
+
+            $this->request->accepts();
+            @$this->request->data['tnx_reference'] = $tnx_reference;
+            @$this->request->data['exclusive_price'] = (int) $this->request->data['exclusive_price'];
+    //   echo '<pre>';print_r($this->request->getData());exit;
+            $accepts = $this->request->accepts(); 
+            //echo json_encode($this->request->data['exclusive_price']);
+            //echo json_encode([$checksilver,$checkgold, $checkplatinum, $check->count(),$checkgold->first()->expiry,Time::Now(),$checkgold->first()->expiry >= Time::Now()]);
+
+
+            if ($checksilver->isEmpty() && $checkgold->isEmpty() && $checkplatinum->isEmpty()) {
+                echo json_encode(['error' => "yes", 'message' => 'You are not allowed to upload beats because you don\'t have an active Producer Subscription.']);
+                // $this->Flash->error(__('You are not allowed to upload beats because you don\'t have an active Producer Subscription.'));
+                //return $this->redirect('/subscribe');
+            }
+
+            if (!$checksilver->isEmpty() && $check->count() >= 20 && $checksilver->first()->expiry >= Time::Now()) {
+                echo json_encode(['error' => true, 'message' => 'You have reached your maximum allowed uploads for SILVER subscription.']);
+                //$this->Flash->error(__('You have reached your maximum allowed uploads for SILVER subscription.'));
+            } elseif (!$checksilver->isEmpty() && $check->count() <= 20 && $checksilver->first()->expiry <= Time::Now()) {
+                echo json_encode(['error' => "yes", 'message' => 'Your SILVER subscription has expired. Renew your plan <a href="/subscribe">Click here to subscribe<a>']);
+                //$this->Flash->error(__('Your SILVER subscription has expired. Renew your plan <a href="/subscribe">Click here to subscribe<a> '));
+            } elseif (!$checksilver->isEmpty() && $check->count() <= 20 && $checksilver->first()->expiry >= Time::Now()) {
+                $store = $this->Stores->patchEntity($store, $this->request->getData());
+                if ($this->Stores->save($store)) {
+                    echo json_encode(['error' => "no", 'message' => 'The beat has been saved to store.']);
+
+                    //$this->Flash->success(__('The beat has been saved to store.'));
+                } else {
+                    echo json_encode(['validation' => $store->errors()]);
+                }
+            }
+
+
+            if (!$checkgold->isEmpty() && $check->count() >= 50 && $checkgold->first()->expiry >= Time::Now()) {
+                echo json_encode(['error' => "yes", 'message' => 'You have reached your maximum allowed uploads for GOLD subscription.']);
+                // $this->Flash->error(__('You have reached your maximum allowed uploads for GOLD subscription.'));
+            } elseif (!$checkgold->isEmpty() && $check->count() <= 50 && $checkgold->first()->expiry <= Time::Now()) {
+
+                echo json_encode(['error' => "yes", 'message' => 'Your GOLD subscription has expired. Renew your plan <a href="/subscribe">Click here to subscribe<a>']);
+                // $this->Flash->error(__('Your GOLD subscription has expired. Renew your plan <a href="/subscribe">Click here to subscribe<a> '));
+            } elseif (!$checkgold->isEmpty() && $check->count() <= 20 && $checkgold->first()->expiry >= Time::Now()) {
+                $store = $this->Stores->patchEntity($store, $this->request->getData());
+                // echo $store;
+                // echo json_encode($this->request->getData()); //start again
+                // echo $this->Stores->save($store);echo '<pre>';print_r($store);exit;
+                if ($this->Stores->save($store)) {
+                    echo json_encode(['error' => "no", 'message' => 'The beat has been saved to store.']);
+                    //  $this->Flash->success(__('The beat has been saved to store.'));
+                    //return $this->redirect(['action' => 'add']);
+                } else {
+                    echo json_encode(['validation' => $store->errors()]);
+                }
+            }
+
+            if (!$checkplatinum->isEmpty() && $checkplatinum->first()->expiry >= Time::Now()) {
+                $store = $this->Stores->patchEntity($store, $this->request->getData());
+                if ($this->Stores->save($store)) {
+                    echo json_encode(['error' => "no", 'message' => 'The beat has been saved to store.']);
+                    //$this->Flash->success(__('The beat has been saved to store.'));
+                    //return $this->redirect(['action' => 'add']);
+                } else {
+                    echo json_encode(['validation' => $store->errors()]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Admin Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function adminadd() {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $store = $this->Stores->newEntity();
+        if ($this->request->is('post')) {
+            $store = $this->Stores->patchEntity($store, $this->request->getData());
+            if ($this->Stores->save($store)) {
+                $this->Flash->success(__('The store has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The store could not be saved. Please, try again.'));
+        }
+
+        $this->set('user', $this->Stores->Users->find('list'));
+        $this->set('genre', $this->Stores->Genres->find('list'));
+        $this->set(compact('store', 'cart'));
+        $this->set('_serialize', ['store', 'user', 'genre']);
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Store id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function edit($id = null) {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        $user = $this->Auth->user();
+        $store = $this->Stores->get($id, [
+            'contain' => []
+        ]);
+
+        //debug($user);
+        $this->set('genre', $this->Stores->Genres->find('list'));
+        $this->set(compact('store', 'user', 'cart'));
+        $this->set('_serialize', ['store']);
+    }
+
+    //THis method edits beats via ajax request
+
+    public function editBeats() {
+        $this->autoRender = false;
+        $id = $this->request->data['storeId'];
+        $store = $this->Stores->get($id, [
+            'contain' => []
+        ]);
+
+        $store = $this->Stores->patchEntity($store, $this->request->getData());
+        if ($this->Stores->save($store)) {
+            echo json_encode(['error' => "no", 'message' => 'Your beat has successfully been updated']);
+        } else {
+            echo json_encode(['validation' => $store->errors()]);
+        }
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Store id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null) {
+        $this->request->allowMethod(['post', 'delete']);
+        $store = $this->Stores->get($id);
+        if ($this->Stores->delete($store)) {
+            $this->Flash->success(__('The store has been deleted.'));
+        } else {
+            $this->Flash->error(__('The store could not be deleted. Please, try again.'));
+        }
+
+        return $this->redirect($this->referer());
+    }
+
+    public function addBeatToPromote() {
+        $this->autoRender = false;
+
+        $storeId = $this->request->data['beatId'];
+        $days = $this->request->data['noOfDays'];
+        $totalFee = (int) $days * 5000;
+
+
+
+        $beatstopromote_table = TableRegistry::get('beatstopromote');
+        $beatstopromote_details = $beatstopromote_table->newEntity();
+        $beatstopromote_details->store_id = $storeId;
+        $beatstopromote_details->days = $days;
+        $beatstopromote_details->status = "No payment yet";
+        $beatstopromote_details->fee = $totalFee;
+
+
+
+        if ($beatstopromote_table->save($beatstopromote_details)) {
+            $this->Flash->success(__("Beat Successfully added. Click on Pay now to promote beat"));
+            return $this->redirect($this->referer());
+        }
+    }
+
+    public function addBeatId() {
+        $this->autoRender = false;
+        $id = $this->request->data['id'];
+        $session = $this->request->session();
+        $session->write('promoteBeatId', $id);
+
+        echo "ok";
+    }
+
+    public function approvePromotedBeat($id = null) {
+        $this->loadModel('Beatstopromote');
+        $beatPromoteInfo = $this->Beatstopromote->find('all', ['limit' => 1])->where(['id' => $id])->toArray();
+        $beatId = $beatPromoteInfo[0]['id'];
+        $days = $beatPromoteInfo[0]['days'];
+        $beatstopromote_table = TableRegistry::get('beatstopromote');
+        $beatstopromote = $beatstopromote_table->get($beatId);
+        $beatstopromote->status = "Activated";
+        $beatstopromote->start_date = date('Y-m-d');
+        $beatstopromote->end_date = date('Y-m-d', strtotime(" + " . $days . " days"));
+
+
+
+        if ($beatstopromote_table->save($beatstopromote)) {
+
+            $this->Flash->success(__('Beat successfully approved'));
+            return $this->redirect(['action' => 'promotebeats']);
+        } else {
+
+            $this->Flash->error(__('There was an error approving promoted beat'));
+        }
+    }
+
+    public function addBeatPayment($respdata = null) {
+        $result = $this->paystackcallback($respdata);
+    }
+
+    private function paystackcallback($reference) {
+
+        $respdata = $this->Paystack->verifytransaction($reference);
+
+        //check if status is true, else redirect with error message
+        if (!$respdata['status']) {
+            $errmsg = $respdata['message'];
+            $this->Flash->error(__('Payment verification error ' . $respdata['message']));
+            return $this->redirect(['controller' => 'stores', 'action' => 'promotebeats']);
+        }
+
+        //if data result is success, then save and active user's reference after confirming it is not yet saved and give value to the client
+        if ($respdata['data']['status'] == "success") {
+
+            //give user value/save into subscription
+            $result = $this->_add($respdata);
+        }
+    }
+
+    protected function _add($respdata = null) {
+        $session = $this->request->session();
+
+        $this->loadModel('Beatstopromote');
+
+        $beatPromoteInfo = $this->Beatstopromote->find('all', ['limit' => 1])->where(['id' => $session->read('promoteBeatId')])->toArray();
+        $beatId = $beatPromoteInfo[0]['id'];
+        $beatstopromote_table = TableRegistry::get('beatstopromote');
+        $beatstopromote = $beatstopromote_table->get($beatId);
+        $beatstopromote->status = "Payment made";
+        $beatstopromote->amount_paid = substr($respdata['data']['amount'], 0, -2);
+        $beatstopromote->tnx_reference = $respdata['data']['reference'];
+
+
+        if ($beatstopromote_table->save($beatstopromote)) {
+
+            $this->Flash->success(__('Your Payment has been received. We will get back to you shortly'));
+            return $this->redirect(['action' => 'promotebeats']);
+        } else {
+
+            $this->Flash->error(__('There was an error with your Payment'));
+            return $this->redirect(['action' => 'promotebeats']);
+        }
+    }
+
+    /**
+     * webhook method
+     * integrated to paystack api
+     */
+    public function webhook() {
+
+        // Retrieve the request's body
+        $body = @file_get_contents("php://input");
+        $signature = (isset($_SERVER['HTTP_X_PAYSTACK_SIGNATURE']) ? $_SERVER['HTTP_X_PAYSTACK_SIGNATURE'] : '');
+
+        /* It is a good idea to log all events received. Add code *
+         * here to log the signature and body to db or file       */
+
+        if (!$signature) {
+            // only a post with paystack signature header gets our attention
+            exit();
+        }
+
+        define('PAYSTACK_SECRET_KEY', 'sk_test_a5f08ca803dfffd53a521bfda552684c2a795539');
+        // confirm the event's signature
+        if ($signature !== hash_hmac('sha512', $body, PAYSTACK_SECRET_KEY)) {
+            // silently forget this ever happened
+            exit();
+        }
+
+        http_response_code(200);
+        // parse event (which is json string) as object
+        // Give value to your customer but don't give any output
+        // Remember that this is a call from Paystack's servers and
+        // Your customer is not seeing the response here at all
+        $event = json_decode($body);
+        switch ($event->event) {
+            // charge.success
+            case 'charge.success':
+                // TIP: you may still verify the transaction
+                // before giving value.
+                break;
+        }
+        exit();
+    }
+    public function bitPlayont(){
+       $listing_id = $this->request->query('id');
+      if($listing_id){
+        $query = $this->Stores->query();
+        $result = $query->update()->set($query->newExpr('play_count = play_count + 1'))->where(['id' => $listing_id])->execute();
+      }
+      die();
+    }
+}

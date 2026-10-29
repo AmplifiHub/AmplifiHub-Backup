@@ -1,0 +1,174 @@
+<?php
+/**
+ * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link      https://cakephp.org CakePHP(tm) Project
+ * @since     0.2.9
+ * @license   https://opensource.org/licenses/mit-license.php MIT License
+ */
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\Collection\Collection;
+use Cake\Event\Event;
+use Cake\Controller\Component\FlashComponent;
+use Cake\Network\Session;
+use Cake\I18n\Time;
+
+/**
+ * Static content controller
+ *
+ * This controller will render views from Template/Pages/
+ *
+ * @link https://book.cakephp.org/3.0/en/controllers/pages-controller.html
+ */
+class PagesController extends AppController
+{
+
+    /**
+     * Displays a view
+     *
+     * @param array ...$path Path segments.
+     * @return \Cake\Http\Response|null
+     * @throws \Cake\Network\Exception\ForbiddenException When a directory traversal attempt.
+     * @throws \Cake\Network\Exception\NotFoundException When the view file could not
+     *   be found or \Cake\View\Exception\MissingTemplateException in debug mode.
+     */
+    public function display(...$path)
+    {
+        $count = count($path);
+        if (!$count) {
+            return $this->redirect('/');
+        }
+        if (in_array('..', $path, true) || in_array('.', $path, true)) {
+            throw new ForbiddenException();
+        }
+        $page = $subpage = null;
+
+        if (!empty($path[0])) {
+            $page = $path[0];
+        }
+        if (!empty($path[1])) {
+            $subpage = $path[1];
+        }
+        $this->set(compact('page', 'subpage'));
+
+        try {
+            $this->render(implode('/', $path));
+        } catch (MissingTemplateException $exception) {
+            if (Configure::read('debug')) {
+                throw $exception;
+            }
+            throw new NotFoundException();
+        }
+
+        $this->loadModel('Stores');
+        $query = $this->Stores->find('All',[
+          'limit' => 12,
+          'order' => ['Stores.created' => 'DESC']
+        ]);
+        $recent = $this->paginate($query);
+        //debug($recent);
+        $this->set(compact('recent'));
+        $this->set('_serialize',['recent']);
+    }
+
+    public function home(){
+      $this->loadModel('Stores');
+      $this->loadModel('Mixmasterings');
+      $this->loadModel('Subscriptions');
+      $this->loadModel('Genres');
+      $this->loadModel('Artistes');
+
+      $date = date('Y-m-d');
+
+      //searching for beats
+      $bquery = $this->Genres->find('list');
+      $genre = $this->paginate($bquery);
+
+      //for recent beats uploaded
+      $query = $this->Stores->find('all',[
+        'contain' => ['Users','Genres'],
+        //'conditions' => ['Stores.promoted'=>1],
+        'limit' => 12,
+        'order' => ['Stores.created' => 'DESC']
+      ]);
+      $recent = $query->toArray();
+
+      //for promoted beats by Admin
+      $promotedquery = $this->Stores->find('all',[
+        'contain' => ['Users','Genres'],
+        'conditions' => ['Stores.promoted'=>'yes'],
+        'limit' => 12,
+        'order' => ['Stores.created' => 'ASC']
+      ]);
+      $promoted = $promotedquery->toArray();
+      //debug($recent);
+
+      //for mixmastering
+      /*$mmquery = $this->Mixmasterings->find('all',[
+        'contain' => ['Users'],
+        //'conditions' => ['Mixmasterings.promoted'=>1],
+        'limit' => 4,
+        'order' => ['Mixmasterings.created' => 'DESC']
+      ]);
+      $mm = $mmquery->toArray();*/
+
+      //for artiste listing on page
+      /*$subquery = $this->Users->Subscriptions->find('all',[
+        'contain' => ['Users','Plans'],
+        'conditions' => ['Subscriptions.status' => 'active','Subscriptions.level_id' => 'artist'],
+        'limit' => 6,
+        'order' => ['Subscriptions.created' => 'DESC']
+      ]);*/
+      //$subscription = $subquery->toArray();
+      $mmlistn = $this->Subscriptions->find()->limit(6)->contain(['Users'=>['Mixmasterings']])->where(['Subscriptions.expiry >=' => $date, 'OR'=>[['Subscriptions.level_id' => 20],['Subscriptions.level_id' => 21],['Subscriptions.level_id' => 22]]])->toArray();
+
+      $artistelistn = $this->Subscriptions->find()->limit(6)->contain(['Users'=>['Artistes']])->where(['Subscriptions.expiry >=' => $date,'Subscriptions.level_id' => 25])->toArray();
+
+      $recentlistn = $this->Stores->find('all')->limit(12)->contain(['Users'])->matching('Subscriptions', function($x) use($date){
+        return $x
+        ->where(['expiry >=' => $date, 'OR'=>[['level_id' => 20],['level_id' => 21],['level_id' => 22]]]);
+      })->toArray();
+
+      //debug($recentlistn);
+      $title = "AmplifiHub";
+      $description = "AmplifiHub is an online African music making marketplace that allows music producers to license / sell beats online, alongside other professionals who make and offer professional African music making services. Sign up today and earn while you entertain.";
+      $AmpKeyword = "AmplifiHub, African music makers, African music making market, Sell beats online, Afrobeat Instrumentals for sale, Afro beat, Afro instrumental beats, buy afrobeats instrumentals";
+      $this->set(compact('AmpKeyword','title','description','recent', 'promoted', 'mm', 'subscriptions','genre', 'artistelistn', 'mmlistn'));
+      $this->set('_serialize',['recent']);
+    }
+
+    public function about($id = null){
+      $this->viewBuilder()->theme('Panel')->layout('front');
+    }
+    
+    
+     public function pricing($id = null){
+      $this->viewBuilder()->theme('Panel')->layout('front');
+    }
+    
+    public function ourteam($id = null){
+        
+      $this->viewBuilder()->theme('Panel')->layout('front');      
+    }
+
+    public function privacypolicy($id = null){  $this->viewBuilder()->theme('Panel')->layout('front');}
+
+    public function termsandconditions(){  $this->viewBuilder()->theme('Panel')->layout('front');}
+
+    public function refundpolicy( $id = null) {$this->viewBuilder()->theme('Panel')->layout('front');}
+
+    public function affiliates(){
+      $this->viewBuilder()->theme('Panel')->layout('front');
+    }
+
+
+
+}

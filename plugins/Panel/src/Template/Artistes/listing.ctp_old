@@ -1,0 +1,97 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Mixmastering[]|\Cake\Collection\CollectionInterface $mixmasterings
+ */
+ $this->assign('title','ARTISTES HUB');
+?>
+<div class="mixmasterings index large-9 medium-8 columns content">
+    <div class="row head-wrap">
+        <div class="col-xs-12 col-md-8">
+            <h1 class="head"><?= __('The Artiste Hub') ?></h1>
+        </div>
+        <div class="col-xs-12 col-md-4">
+            <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+              <?= $this->Form->create(null,[
+    'url' => '/mixing-and-mastering-hub'
+,'type' => 'get']) ?>
+        <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+              <?= $this->Form->control('beats', ['label' => false,'id'=> 'term2','class' => ['search-query','form-control'],'placeholder'=> 'Search Artiste']);?>
+            <span class="input-group-btn">
+                <button class="btn btn-danger" type="submit"> <span class=" glyphicon glyphicon-search"></span> </button>
+            </span> </div>
+            </div>
+        </div>
+        <?= $this->Form->end() ?>
+       
+          
+          </div>
+            </div>
+        </div>
+        </div>
+    </div>
+  <div class="row">
+      
+    <?php foreach ($artistes as $artiste): ?>
+      <div class="col-md-4">
+    <div class="mix-wrap">
+    <div class="mix-body">
+      <div class=" col-xs-5 col-sm-5 col-md-5">
+        <?= $dp = ($artiste->user_booking->photo !== null) ? $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$artiste->user_booking->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ?>
+      </div>
+      <div class="col-md-7 col-sm-7 col-xs-7">
+          <div class="row">
+              <div class="col-xs-6 col-md-6">
+        <span class="btn btn-info">My Track</span>
+         <div class="control-wrap">
+      <a href="#" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Artistes/artiste_song/<?=h($artiste->artiste_song);?>"
+         song_type="<?=h($artiste->song_type);?>" 
+         data-name="<?= h($artiste->song_title);?>"
+         data-user="<?= h(substr($artiste->artiste_name, 0, 10));?>"
+         class="play-wrap show">
+         <?= $this->Html->image('white-play-128.png',['class'=>['img-responsive','play']]);?>
+         
+      </a>
+      <a class="pause-wrap hide">
+           <?= $this->Html->image('pause-128.png',['class'=> ['img-responsive','pause'],'style'=>'width: 34px;height: 34px;margin-top: 12px;margin-left: 10px;']); ?>
+      </a>
+      </div>
+
+      
+      <!--?= h($artiste->user_booking->bio) ?-->
+              </div>
+             
+          </div>
+          <div class="row mix-name" style="padding-left: 21px;">
+               <?= $this->Html->link($artiste->artiste_name,'#') ?><br>
+          </div>
+              </div>
+    </div>
+  <div class="mix-footer">
+      <?= $this->Form->postLink(
+              __('View Profile'),
+              '/artiste/'.$artiste->user_booking->id,
+              ['class' => 'btn btn-primary btn-block btn-xs pull-right clearfix']
+          )
+      ?>
+  
+  </div>
+  </div>
+</div>
+  <?php endforeach; ?>
+</div>
+    <div class="paginator">
+        <ul class="pagination">
+            <?= $this->Paginator->first('<< ' . __('first')) ?>
+            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__('next') . ' >') ?>
+            <?= $this->Paginator->last(__('last') . ' >>') ?>
+        </ul>
+        <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+    </div>
+</div>

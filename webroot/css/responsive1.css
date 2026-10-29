@@ -1,0 +1,314 @@
+/* Medium Layout: 1280px. */
+@media only screen and (min-width: 992px) and (max-width: 1200px) { 
+  .hero-area h2 {
+    font-size: 38px;
+}
+    .testimonial-single-img {
+    width: 200px;
+    height: 200px;
+}
+    .header-text h2 {
+    font-size: 36px;
+    line-height: 48px;
+}
+    .simple-search-are select.mdb-select.md-form {
+    margin-right: 6px;
+}
+    .featured-content {
+    left: 10px;
+}
+    .featured-content li a {
+    padding: 2px 5px;
+    width: 62px;
+}
+    .single-playlist p {
+    padding: 0px 5px;
+    font-size: 13px;
+}
+    .buy-btn {
+    padding: 3px 20px;
+}
+    
+}
+/* Tablet Layout: 768px. */
+@media only screen and (min-width: 768px) and (max-width: 991px) { 
+ 
+    .hero-area h2 {
+    font-size: 30px;
+    line-height: 42px
+}
+    .testimonial-gallery {
+    padding: 20px 0px;
+}
+    .link-area h4 {
+    font-size: 20px;
+}
+    .link-area li a {
+    font-size: 12px;
+}
+    .header-text h2 {
+    font-size: 30px;
+    width: 100%;
+    line-height: 40px;
+}
+    .simple-search-are span {
+    padding: 0px;
+}
+    .simple-search-are select.mdb-select.md-form {
+    margin-right: 2px;
+}
+    .featured-bg {
+    margin-bottom: 8px;
+    margin-top: 30px;
+}
+    .play-btn {
+    top: 8%;
+}
+    .featured-content li a {
+    padding: 1px 10px;
+}
+    .single-packs-bg {
+    height: 180px;
+}
+    .sample-playlist {
+    padding: 10px 5px;
+}
+    .single-playlist p {
+    padding: 0px;
+    font-size: 10px;
+}
+    .buy-btn {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+    .custom-scrollbar {
+    overflow-y: scroll;
+    height: 480px;
+}
+}
+/* Mobile Layout: 320px. */
+@media only screen and (max-width: 767px) { 
+    .container{
+        padding: 15px;
+    }
+ #mobile-menu {
+    display: block;
+}
+
+.mobile-menu {
+    display: block;
+}
+    #menu {
+    display: none;
+}
+    li.mobview {
+    display: none;
+}
+    .logo {
+    float: unset;
+    display: inline-block;
+    padding: 0px;
+    margin-left: 35%;
+    padding-top: 16px;
+}
+    .logo img {
+    width: 100px;
+}
+
+.mobile-menu {
+    display: inline;
+}
+    .slicknav_menu {
+    background: transparent;
+    padding: 5px;
+    position: fixed;
+    left: 0px;
+    top: 8px;
+    z-index: 9999;
+    width: 100%;
+}
+    .slicknav_menu .slicknav_menutxt {
+    display: none;
+    line-height: 0;
+    float: unset;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: none;
+}
+    .slicknav_menu .slicknav_icon {
+    margin: 0px;
+}
+    .slicknav_btn {
+    float: left;
+    position:absolute;
+}
+    .slicknav_nav {
+    margin: 0;
+    padding: 20px 0px;
+    margin-top: 50px;
+    background-color: #333;
+}
+    .singup {
+    background-color: #41AA5E;
+    text-align: center;
+    display: inline-block;
+    width: 91%;
+    border-radius: 20px;
+}
+
+    .my-cart {
+    position: relative;
+}
+.my-cart {
+    display: inline;
+    float: right;
+    padding: 15px 20px;
+    font-size: 15px;
+}
+    .my-cart .badge {
+    position: absolute;
+    top: 7px;
+    left: 34px;
+    background-color: #e30d40!important;
+}
+.badge {
+    display: inline-block;
+    min-width: 10px;
+    padding: 3px 7px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: #777;
+    border-radius: 10px;
+}
+    .hero-area h2 {
+    font-size: 18px;
+    line-height: 30px;
+}
+    .hero-area p {
+    width: auto;
+    font-size: 12px;
+}
+    .testimonial-area {
+    padding: 10px;
+}
+    .testimonial-gallery {
+    padding: 20px 0px;
+}
+    .testimonial-single-img {
+    margin-bottom: 10px;
+}
+    .cta-rae {
+    margin-bottom: 20px;
+}
+    .link-area {
+    margin-bottom: 30px;
+}
+
+.link-area h4 {
+    font-size: 16px;
+}
+
+.link-area li a {
+    font-size: 12px;
+}
+
+.footer-bottom-area p {
+    font-size: 13px;
+}
+    
+    .header-area {
+    padding: 20px 0px;
+}
+    .header-text h2 {
+    font-size: 20px;
+    width: 100%;
+    line-height: 30px;
+}
+    .header-text p {
+    padding-bottom: 25px;
+    width: 100%;
+    font-size: 12px;
+    padding-top: 0px;
+}
+    .simple-search-are input[type="submit"] {
+    padding: 10px 30px;
+    width: 100%;
+    font-size: 12px;
+}
+    .simple-search-are span {
+    font-size: 12px;
+    padding: 0px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+}
+    .simple-search-are select.mdb-select.md-form {
+    padding: 10px;
+    margin-right: 0px;
+    margin-top: 10px;
+    width: 32%;
+}
+    .featured-simple-area {
+    padding: 5px;
+}
+    .featured-bg {
+    margin-bottom: 0px;
+    margin-top: 20px;
+}
+    .play-btn {
+    top: 8%;
+}
+    .featured-content li a {
+    font-size: 10px;
+}
+    span {
+    font-size: 12px;
+}
+    .sample-content {
+    padding: 5px;
+    overflow: hidden;
+}
+    .sample-playlist-area {
+    width: 100%;
+}
+    .sample-packs-area {
+    width: 100%;
+    margin: 10px 0px 30px 0px;
+}
+    .single-packs-bg {
+    height: 180px;
+}
+    .sample-playlist {
+    padding: 10px 5px;
+}
+    .playlist-btn {
+    width: 28px;
+    height: 28px;
+    line-height: 20px;
+}
+    .playlist-btn a i {
+    font-size: 10px;
+}
+    .single-playlist p {
+    padding: 0px 4px;
+    font-size: 9px;
+}
+    .buy-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+}
+    .custom-scrollbar {
+    overflow-y: scroll;
+    height: 314px;
+}
+}
+/* Wide Mobile Layout: 480px. */
+@media only screen and (min-width: 480px) and (max-width: 767px) { 
+
+}

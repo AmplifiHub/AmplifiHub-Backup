@@ -1,0 +1,262 @@
+<?php
+
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\I18n\Time;
+use Cake\ORM\TableRegistry;
+
+/**
+ * Directors Controller
+ *
+ * @property \App\Model\Table\DirectorsTable $Directors
+ *
+ * @method \App\Model\Entity\Director[] paginate($object = null, array $settings = [])
+ */
+class DirectorsController extends AppController {
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function profile($id = null) {
+        $this->viewBuilder()->theme('Panel')->layout('newdesign');
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+        $this->loadModel('Stores');
+        
+        $profile = $this->Directors->newEntity();
+        $this->loadModel('Users');
+        $id = $this->request->getParam('id');
+        $user_id = $this->Auth->user('id');
+
+        try {
+            $director = $this->Users->get($id, [
+                'contain' => ['Directors']
+            ]);
+        } catch (\Exception $e) {
+            $this->Flash->error('Director\'s profile not found');
+            return $this->redirect('/director');
+        }
+
+        //Directors Rating and counting of number of raters
+        $this->loadmodel('Ratings');
+        $query = $this->Ratings->find('all', ['conditions' => ['user_id' => $id]]);
+
+        $countraters = $query->count();
+        $ratingsum = $query->select(['rating' => $query->func()->sum('rating')])->first();
+
+        $rating = @number_format($ratingsum['rating'] / $countraters);
+
+        $countcomment = $this->Directors->Users->Comments->find('all', ['conditions' => ['Comments.Commentee_id' => $id, 'Comments.type' => 'vd']])->count();
+
+        //$directors = $this->paginate($this->Directors);
+        $promotedquery = $this->Stores->find('all',[
+            'contain' => ['Users','Genres'],
+            'conditions' => ['Stores.promoted'=>'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+        $promoted = $promotedquery->toArray();
+        $this->set(compact('countraters', 'id', 'profile', 'user_id', 'rating', 'countcomment', 'director', 'cart','promoted'));
+        $this->set('_serialize', ['director']);
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Director id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $director = $this->Directors->get($id, [
+            'contain' => []
+        ]);
+
+        $this->set('director', $director);
+        $this->set('cart', $cart);
+        $this->set('_serialize', ['director']);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add() {
+        
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $director = $this->Directors->find()->where(['User_id' => $this->Auth->user('id')])->first();
+
+        $substatus = null;
+
+        //check if user subscribe as an artiste and account still active
+        $check = $this->Directors->Subscriptions->find('all')->where(['Subscriptions.user_id' => $this->Auth->user('id'), 'Subscriptions.expiry >' => Time::Now()])->contain(['plans' => function($q) {
+                return $q
+                                ->where(['plan_code' => 'PLN_1zavvhynnox5s8n']);
+            }]);
+        $checkexpiry = $check->first();
+
+        //if not null save else warn user to behave and subscribe
+        if (!$check->isEmpty()) {
+            $substatus = 'active';
+            if ($this->request->is('post')) {
+                $this->request->data['user_id'] = $this->Auth->user('id');
+
+                $this->request->data['videos_url'] = json_encode($this->request->data['videos_url']);
+
+                if ((is_null($director))) {
+                    $director = $this->Directors->newEntity();
+                }
+                $director = $this->Directors->patchEntity($director, $this->request->getData());
+                # if already created, update with new value
+                if ($this->Directors->save($director)) {
+                    $this->Flash->success(__('Director profile has been saved.'));
+
+                    return $this->redirect(['action' => 'add']);
+                }
+                //debug($director->errors());
+                $this->Flash->error(__('The Director could not be saved. Please, try again.'));
+            }
+        } elseif (!$check->isEmpty() && $checkexpiry['expiry'] < Time::Now()) {
+            # code...
+            $this->Flash->error(__('You need to resubscribe because your subscription has expired'));
+            //return $this->redirect('/subscribe');
+        } else {
+            # code...
+            $this->Flash->error(__('You need to subscribe to be able to set up a Director profile'));
+            //return $this->redirect('/subscribe');
+        }
+
+        $this->set(compact('director', 'users', 'substatus', 'cart'));
+        $this->set('_serialize', ['director']);
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Director id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function listing() {
+        $this->loadModel('PageBanner');
+
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        $this->viewBuilder()->theme('Panel')->layout('newdesign');
+        $this->paginate = [
+        ];
+        $display = 'hide';
+        $date = date('Y-m-d');
+
+        $query = $this->Directors->find('all');
+        $query->matching(
+                'Users.Subscriptions', function($q) use($date) {
+            return
+                            $q->where(['Subscriptions.expiry >=' => $date])
+                            ->matching('Plans', function($x) {
+                                return $x
+                                        ->where(['plan_code' => 'PLN_1zavvhynnox5s8n']);
+                            });
+        });
+        $query->contain(['Users' => ['Likes' => function ($y) use ($query) {
+                    return $y
+                                    ->select(['user_id'])
+                                    ->select(['type' => $query->func()->count('type')])
+                                    ->where(['type' => 'vd']);
+                }]]);
+
+        $directors = $this->paginate($query);
+
+        $topArtistes = $this->Directors->find()->contain('Users')->where(['featured' => 1])->limit(5)->all();
+
+
+        //debug($directors);
+        $title = "Video Directors In Africa | Shoot A Music Video | Book A Cinematographer - AmplifiHub Video Directors Hub";
+        $description = "Get Professional cinematography services in Africa here on AmplifiHub. Check us out today and have no regrets! You just hit the motherload.";
+        $AmpKeyword = "Video directors in Nigeria, Cheap video directors in Nigeria, shoot viral videos in Nigeria, cinematographer in Africa, Video director, Video Shoot";
+
+        $banner = $this->PageBanner->find('all', ['conditions' => ['status' => 1, 'page' => 5]])->first();
+
+        $this->set(compact('AmpKeyword', 'title', 'description', 'directors', 'display', 'likes', 'cart', 'banner', 'topArtistes'));
+        $this->set('_serialize', ['directors']);
+    }
+
+    public function edit($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $director = $this->Directors->get($id, [
+            'contain' => []
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $director = $this->Directors->patchEntity($director, $this->request->getData());
+            if ($this->Directors->save($director)) {
+                $this->Flash->success(__('The director has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The director could not be saved. Please, try again.'));
+        }
+        $this->set(compact('director', 'cart'));
+        $this->set('_serialize', ['director']);
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Director id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null) {
+        $this->request->allowMethod(['post', 'delete']);
+        $director = $this->Directors->get($id);
+        if ($this->Directors->delete($director)) {
+            $this->Flash->success(__('The director has been deleted.'));
+        } else {
+            $this->Flash->error(__('The director could not be deleted. Please, try again.'));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
+    public function featured($id = null, $status = 0) {
+
+        if ($this->request->is('post')) {
+
+
+
+            $articlesTable = TableRegistry::get('Directors');
+            $article = $articlesTable->get($id); // Return article with id 12
+
+            $article->featured = $status;
+            $articlesTable->save($article);
+
+            return $this->redirect(['action' => 'featured']);
+        }
+
+        $topArtistes = $this->Directors->find()->contain('Users')->where(['featured' => 1])->all();
+        $this->paginate = [
+            'contain' => [
+                'Users',
+            //'Booked'
+            ]
+        ];
+        $query = $this->Directors->find('all');
+        $artistes = $this->paginate($query);
+        // print_r($artistes);
+        //die();
+
+        $this->set(compact('artistes', 'topArtistes'));
+    }
+
+}

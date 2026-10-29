@@ -1,0 +1,136 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Mixmastering[]|\Cake\Collection\CollectionInterface $mixmasterings
+ */
+ $this->assign('title','VIDEO DIRECTORS HUB');
+?>
+<?= $this->Flash->render() ?>
+
+
+
+<section class="toprated-block container-fluid">
+    <h1>The Video Director Hub</h1>
+     <?php if($banner){ ?>
+    <div class="bg" style="background-image: url(<?= 'https://s3.us-east-2.amazonaws.com/amplifihub/PageBanner/file_name/'.$banner->file_name ?>);"></div>
+    <?php } ?>
+
+        <?php // $this->Form->create(null,[ 'url' => '/mixing-and-mastering-hub','class'=> 'search-form']) ?>
+        <?= $this->Form->create(null,[
+            'url' => '/mixing-and-mastering-hub',
+            'class'=>"search-form",
+            'type' => 'get'
+            ]
+        ) ?>
+
+    <div class="form-group">
+        <div class="input-wrap">
+            <a href="#" class="search"><i class="fa fa-search fa-2x"></i></a>
+            <input type="Searach" class="form-control search-input" placeholder="Search ">
+        </div>
+    </div>
+
+    <?= $this->Form->end() ?>
+</section>
+<?php if(count($topArtistes)){ ?>
+<section class="topdirector-block container-fluid">
+    <div class="bg">
+        <h1>top video directors</h1>
+        <div class="video-wrapper">
+            <div class="row">
+                 
+                 <?php foreach ($topArtistes as $director): ?>
+                <div class="col">
+                    <div class="box">
+                        <div class="box-holder">
+                            <div class="img-wrapper">
+                                <div class="img-holder">
+                                    <div class="img">
+
+                                        <?= $dp = ($director->user->photo !== null) ? $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$director->user->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ; ?>
+                                       <!--  <img src="images/img12.jpg" alt="image description"> -->
+                                    </div>
+                                    <span class="name"><?= @$director->user->aka ?></span>
+                                </div>
+                            </div>
+                            <div class="info-wrapper">
+                                <div class="video-holder">
+                                    <iframe src="https://www.youtube.com/embed/8dLkrDUGNbU" allow="autoplay; encrypted-media" allowfullscreen="" width="650" height="415" frameborder="0"></iframe>
+                                </div>
+                                <a href="<?= '/director/'.$director->user->id ?>" class="profile">
+                                    <span>View Profile</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
+<?php } ?>
+<section class="director-block container-fluid">
+    <div class="holder">
+        <div class="video-wrapper">
+            <div class="row">
+
+                <?php foreach ($directors as $director): ?>
+                <div class="col">
+                    <div class="box">
+                        <div class="box-holder">
+                            <div class="img-wrapper">
+                                <div class="img-holder">
+                                    <div class="img">
+
+                                        <?= $dp = ($director->user->photo !== null) ? $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$director->user->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ; ?>
+                                       <!--  <img src="images/img12.jpg" alt="image description"> -->
+                                    </div>
+                                    <span class="name"><?= @$director->user->aka ?></span>
+                                </div>
+                            </div>
+                            <div class="info-wrapper">
+                                <div class="video-holder">
+                                    <iframe src="https://www.youtube.com/embed/8dLkrDUGNbU" allow="autoplay; encrypted-media" allowfullscreen="" width="650" height="415" frameborder="0"></iframe>
+                                </div>
+                                <a href="<?= '/director/'.$director->user->id ?>" class="profile">
+                                    <span>View Profile</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <?php endforeach; ?>
+            </div>
+            <div class="row paginator_wrapper">
+                  <div class="paginator">
+                    <ul class="pagination">
+                        <?= $this->Paginator->first('<< ' . __('first')) ?>
+                        <?= $this->Paginator->prev('< ' . __('previous')) ?>
+                        <?= $this->Paginator->numbers() ?>
+                        <?= $this->Paginator->next(__('next') . ' >') ?>
+                        <?= $this->Paginator->last(__('last') . ' >>') ?>
+                    </ul>
+                    <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+ 
+
+
+
+
+
+
+
+ 
+ 
+<script src="js/new-design.js" defer></script>
+<script>
+
+$( document ).ready(function() {
+    initTabs();
+});
+</script>

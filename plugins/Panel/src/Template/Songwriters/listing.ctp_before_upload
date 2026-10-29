@@ -1,0 +1,67 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Mixmastering[]|\Cake\Collection\CollectionInterface $mixmasterings
+ */
+ $this->assign('title','SONG WRITERS HUB');
+?>
+
+ <div class="row head-wrap">
+        <div class="col-xs-12 col-md-8">
+            <h1 class="head" style="font-size: 2em;"><?= __('The Song Writers Hub') ?></h1>
+        </div>
+        <div class="col-xs-12 col-md-4">
+            <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+            <input class="search-query form-control" placeholder="Search Song Writers" type="text">
+            <span class="input-group-btn">
+            <button class="btn btn-danger" type="button"> <span class=" glyphicon glyphicon-search"></span> </button>
+            </span> </div>
+            </div>
+        </div>
+        </div>
+    </div>
+<div class="mixmasterings index large-9 medium-8 columns content">
+  <div class="row">
+  <?php foreach ($songwriters as $sw): ?>
+      <div class="col-md-4">
+    <div class="mix-wrap">
+    <div class="mix-body">
+      <div class="col-xs-5 col-md-5">
+<?= $dp = ($sw->user->photo !== null) ? $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$sw->user->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ?> 
+      </div>
+      <div class="col-xs-7 col-md-7 mix-name" >
+           <span class="badge badge-info">Bio</span><br>
+           <br/>
+      <?= $this->Html->link($sw->user->aka,'#') ?><br>
+      
+      </div>
+         
+    </div>
+  <div class="mix-footer">
+   
+      <?= $this->Form->postLink(
+              __('View Profile'),
+              '/songwriter/'.$sw->user->id,
+              ['class' => 'btn btn-primary btn-block clearfix']
+          )
+      ?>
+  
+  </div>
+  </div>
+</div>
+  <?php endforeach; ?>
+</div>
+    <div class="paginator">
+        <ul class="pagination">
+            <?= $this->Paginator->first('<< ' . __('first')) ?>
+            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__('next') . ' >') ?>
+            <?= $this->Paginator->last(__('last') . ' >>') ?>
+        </ul>
+        <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+    </div>
+</div>
+

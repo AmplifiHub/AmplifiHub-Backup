@@ -1,0 +1,670 @@
+<?php
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\Collection\Collection;
+use Cake\Event\Event;
+use Cake\Controller\Component\FlashComponent;
+use Cake\Network\Session;
+use Cake\Mailer\Email;
+use Cake\Mailer\MailerAwareTrait;
+use Cake\ORM\TableRegistry;
+use Cake\Datasource\ConnectionManager;
+
+/**
+ * Users Controller
+ *
+ * @property \App\Model\Table\UsersTable $Users
+ *
+ * @method \App\Model\Entity\User[] paginate($object = null, array $settings = [])
+ */
+class UsersController extends AppController
+{
+  use MailerAwareTrait;
+
+    public function beforeFilter(Event $event)
+      {
+          parent::beforeFilter($event);
+          // Allow users to register and logout.
+          // You should not add the "login" action to allow list. Doing so would
+          // cause problems with normal functioning of AuthComponent.
+          $this->Auth->allow(['verify', 'register','add', 'logout','resetpassword', 'reset']);
+      }
+
+    public function initialize(){
+
+      parent::initialize();
+    }
+
+      public function isAuthorize($user)
+      {
+
+        //users can only edit their profile
+        if(in_array($this->request->getParam['action'],['edit'])){
+          if($user['role'] === $this->Auth->user('role') && $user['id'] === $this->Auth->user('id') ){
+            return true;
+          }
+
+        }
+
+        //users can only edit their store
+
+        return parent::isAuthorize($user);
+      }
+
+      public function login()
+      {
+        $this->viewBuilder()->theme('Panel')->layout('register');
+
+        if($this->Auth->User('id') !== null){
+              return $this->redirect($this->Auth->redirectUrl());
+        }
+
+          if ($this->request->is('post')) {
+            $user = $this->Auth->identify();
+              if ($user) {
+
+                  $this->Auth->setUser($user);
+                  return $this->redirect($this->Auth->redirectUrl());
+              }
+              $this->Flash->error(__('Invalid email or password, try again'));
+          }
+      }
+
+      public function logout()
+      {
+        $session = new Session();
+        $session->destroy('cart');
+          return $this->redirect($this->Auth->logout());
+      }
+
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function index()
+    {
+            $this->loadModel('Carts');
+            $this->loadModel('Plans');
+        $cart = $this->Carts->getCount();
+        
+      $id =  $this->Auth->user('id');
+      $user = $this->Users->get($id, [
+          'contain' => []
+      ]);
+      
+      $plansquery = $this->Plans->find('all',[
+            'fields' => array('Plans.id','Plans.name')
+        ]);
+        
+        $plans = $plansquery->toArray();
+        
+      //check if user is authorized to view page. Only admin should view page
+        if($this->isAuthorize($user)):
+        $users = $this->paginate($this->Users);
+      else:
+        $this->Flash->error(__('You not authorized to visit that page.'));
+        return $this->redirect('/profile');
+        endif;
+
+        $this->set(compact('users','cart','plans'));
+        $this->set('_serialize', ['users']);
+    }
+
+    
+    
+    public function subUser(){
+        
+            $this->autoRender = false;
+            $this->loadModel('Subscriptions');
+        
+        $userId = $this->request->data['userId'];
+        $levelId = $this->request->data['levelId'];
+        
+       // debug($userId);
+        $date = date('Y-m-d');
+        $expirydate = date('Y-m-d', strtotime('+1 years'));
+        
+        //debug($expirydate);
+        
+        
+        
+       $subscription_table = TableRegistry::get('Subscriptions');
+           $subscription = $subscription_table->newEntity();
+           $subscription->user_id = $userId;
+           $subscription->level_id = $levelId;
+           $subscription->tnx_reference = "manual-membership";
+            $subscription->created = $date;
+            $subscription->expiry = $expirydate;
+        
+            if($subscription_table->save($subscription)){
+                  $this->Flash->success(__("Successfully subscribed user to a package. Please check view membership under subscriptions menu"));
+                  return $this->redirect($this->referer());
+                
+            }
+            
+    }
+    
+    
+    
+    /**
+    *Dashboard method
+    *Shows users profile pix, profile bio, store beats, beats sold
+    *@param string/null $id user id
+    *@return \Cake\Http\Response\void
+    *@throws \Cake\Datasource\Exception\RecordNotFoundException
+    **/
+    public function dashboard($id = null)
+    {
+            $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        
+      $id =  $this->Auth->user('id');
+      $money = null;
+      $dash = $this->Users->find();
+      $dashboard = $this->Users->find()->contain([ 'bankbalances'])->matching('Stores.carts',function($x){
+        return $x
+        ->where(['Carts.status'=>'paid']);
+      })->where(['Users.id'=>$id])->toArray();
+
+      //debug(count($dashboard));
+
+      //money made
+      $money = $dashboard[0]['Bankbalances']['balance'];
+      foreach ($dashboard as $record) {
+        # code...//
+      $charts[] =  date("Y-m",strtotime($record['Carts']['created']));
+      $records = array_count_values($charts);
+
+      }
+      foreach ($records as $key => $value) {
+        # code...
+        $chart[] = [$key,$value];
+      }
+
+      $chartplot = json_encode($chart);
+      //debug($dashboard);
+
+      //sales record
+      $sales = count($dashboard);
+      /*foreach ($dashboard['stores'] as $cart) {
+        # code...
+        foreach ($cart['carts'] as $amount) {
+          # code...
+          $sales = $sales + 1;
+        }
+      }*/
+
+      //inbox messages
+      $messages = $this->Users->Messages->find()->where(['User_id'=>$id,'Status'=>'unread']);
+      $notifications = $messages->count();
+
+      //booking requests
+      $artiste = $this->Users->Artistesrequesters->find()->where(['User_id'=>$id])->count();
+      $director = $this->Users->Directorequests->find()->where(['User_id'=>$id])->count();
+      $mixmaster = $this->Users->Mmrequesters->find()->where(['User_id'=>$id])->count();
+      $swriter = $this->Users->Swriterequests->find()->where(['User_id'=>$id])->count();
+      $bookings = $artiste + $director + $mixmaster + $swriter;
+      //debug($artiste + $director + $mixmaster + $swriter);
+      //debug($dashboard);
+      $this->set(compact('users', 'pix', 'bio', 'beats', 'chartplot', 'beat_sold','dashboard','money','sales', 'notifications', 'bookings','cart'));
+      $this->set('_serialize', true);
+    }
+
+
+    /**
+     * View method
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null)
+    {
+            $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        
+        $user = $this->Users->get($id, [
+            'contain' => []
+        ]);
+
+        $this->set('user', $user);
+        $this->set('cart', $cart);
+        $this->set('_serialize', ['user']);
+    }
+
+    /**
+     * Register method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add()
+    {
+            $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        
+      $this->viewBuilder()->theme('Panel')->layout('register');
+        $user = $this->Users->newEntity();
+        if ($this->request->is('post')) {
+          $user_data = $this->request->getData();
+
+          $check = $this->Users->find('all',['conditions'=>['Users.email'=>$user_data['email']]
+        ]);
+        //debug($check);
+        if($check->isEmpty()):
+          $emailtoken = $this->Users->tokenize($user_data['email']);
+          $email = new Email('default');
+          $email->to($user_data['email'])
+          ->template('Panel.token','Panel.token')
+          ->viewVars(['token'=>$emailtoken['token']])
+          ->emailFormat('html')
+          ->sender('noreply@amplifihub.com','Amplifihub')
+          ->from('noreply@amplifihub.com','Amplifihub')
+          ->subject('Amplifihub Email Registration Confirmation');
+          $sent = $email->send();
+
+            //debug($sent);
+            if($sent):
+          $this->Flash->info(__('Thank you for registering. An activation link has been sent to the email you provided'));
+        else:
+        $this->Flash->error(__('Couldn\'t send email. Please try again.'));
+      endif;
+      else:
+      $this->Flash->info(__('This email is already in use'));
+      endif;
+
+      }
+        $this->set(compact('user','cart'));
+        $this->set('_serialize', ['user']);
+    }
+
+
+    /**
+     * Verifyemail method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function verify($token = null)
+    {
+
+      try {
+        $verify =$this->Users->Tokens->verify($token);
+
+      if($verify):
+        $this->Flash->success(__('Email Verification and Registration successful.'));
+        return $this->redirect(['controller'=>'plans','action'=>'subscribe']);
+      endif;
+      } catch (\Exception $e) {
+        $this->Flash->error(__('Verification error. Either token has expired or used. Try registering again'));
+        return $this->redirect(['action'=>'register']);
+      }
+
+
+
+    }
+
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function register()
+    {
+            $this->loadModel('Carts');
+             $this->loadModel('Referrals');
+        $cart = $this->Carts->getCount();
+        
+      if($this->Auth->User('id') !== null){
+            return $this->redirect($this->Auth->redirectUrl());
+      }
+
+      $this->viewBuilder()->theme('Panel')->layout('register');
+
+      $user = $this->Users->newEntity();
+      $referral = $this->Referrals->newEntity(); 
+
+        if ($this->request->is('post')) {
+            if($this->request->getQuery('ref')){
+              $ref = $this->request->getQuery('ref'); 
+              
+                 $user_data = $this->request->getdata();
+
+
+
+              $user_data['role'] = 'user';
+              $user_save = $this->Users->patchEntity($user, $user_data);
+              
+           
+              
+          
+
+
+              //debug($user_save);
+                if ($this->Users->save($user_save)) {
+                  $options = [
+                      'foreign_key'=>$user->id
+                  ];
+                  $referral_id = preg_replace('/\D/', '', $ref); // Get digits
+                     $referral_data['referral_id'] = $referral_id; 
+              $referral_data['user_id'] = $user->id;
+                  $referral_save = $this->Referrals->patchEntity($referral, $referral_data);
+                  
+                  if($this->Referrals->save($referral_save)){
+                                     
+                  $emailtoken = $this->Users->Tokens->find('all',['conditions'=>['Tokens.foreign_key'=>$user->id], 'fields'=>'Tokens.token'])->first();
+                  //debug($emailtoken->token);
+                  $email = new Email('default');
+                  $email->to($user_data['email'])
+                  ->template('Panel.token','Panel.token')
+                  ->viewVars(['token'=>$emailtoken->token])
+                  ->emailFormat('html')
+                  ->sender('noreply@amplifihub.com','Amplifihub')
+                  ->from('noreply@amplifihub.com','Amplifihub')
+                  ->subject('Amplifihub Email Registration Confirmation');
+                  $sent = $email->send();
+
+                    //debug($sent);
+                    if($sent):
+
+                    $this->Flash->info(__('Thank you for registering. An activation link has been sent to the email you provided'));
+                  else:
+                  $this->Flash->error(__('Couldn\'t send email. Please try again.'));
+                  endif;
+                }
+                else{
+                  $this->Flash->error(__('Oops an Error occured saving your referral. Please, try again.'));
+                }
+                 
+                  }else{
+                    $this->Flash->error(__('The user could not be saved. Please, try again.'));   
+                  }
+                  
+                  
+                  
+
+            }else{
+            
+          $user_data = $this->request->getdata();
+
+
+
+              $user_data['role'] = 'user';
+              $user_save = $this->Users->patchEntity($user, $user_data);
+
+              //debug($user_save);
+                if ($this->Users->save($user_save)) {
+                  $options = [
+                      'foreign_key'=>$user->id
+                  ];
+                  $emailtoken = $this->Users->Tokens->find('all',['conditions'=>['Tokens.foreign_key'=>$user->id], 'fields'=>'Tokens.token'])->first();
+                  //debug($emailtoken->token);
+                  $email = new Email('default');
+                  $email->to($user_data['email'])
+                  ->template('Panel.token','Panel.token')
+                  ->viewVars(['token'=>$emailtoken->token])
+                  ->emailFormat('html')
+                  ->sender('noreply@amplifihub.com','Amplifihub')
+                  ->from('noreply@amplifihub.com','Amplifihub')
+                  ->subject('Amplifihub Email Registration Confirmation');
+                  $sent = $email->send();
+
+                    //debug($sent);
+                    if($sent):
+
+                    $this->Flash->info(__('Thank you for registering. An activation link has been sent to the email you provided'));
+                  else:
+                  $this->Flash->error(__('Couldn\'t send email. Please try again.'));
+                  endif;
+                }else{
+                  $this->Flash->error(__('The user could not be saved. Please, try again.'));
+                }
+        }
+        }
+        
+        $this->set(compact('user','email','cart'));
+        $this->set('_serialize', ['user']);
+    }
+
+    /**
+     * resetPassword recovery method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+     public function resetpassword($email = null){
+       $this->viewBuilder()->theme('Panel')->layout('register');
+
+        //check user is in system
+        if($this->request->is('post')){
+           $query = $this->Users->findByEmail($this->request->data['email'])->first();
+
+          if(is_null($query)){
+            $this->Flash->error(__('Can\'t find your account in our system. Email does not exist'));
+          }else{
+            $query->email = $this->request->data['email'];
+            $recover = $this->Users->save($query);
+
+            if($recover) {
+              $options = [
+                  'foreign_key'=>$query->id
+              ];
+              $emailtoken = $this->Users->Tokens->find('all',['conditions'=>['Tokens.foreign_key'=>$query->id, 'Tokens.status'=>false], 'fields'=>'Tokens.token'])->last();
+              //debug($emailtoken->token);
+            $sent =  $this->getMailer('User')->send('resetPassword', [$query,$emailtoken]);
+
+                //debug($sent);
+                if($sent):
+                $this->Flash->info(__('Password reset link has been sent to the email you provided'));
+              else:
+              $this->Flash->error(__('Couldn\'t send password reset email. Please try again.'));
+            endif;
+            }
+
+          }
+        }
+     }
+
+     /**
+      * Confirm password reset recovery method
+      *
+      * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+      */
+      public function reset($token = null){
+        $this->viewBuilder()->theme('Panel')->layout('register');
+
+        if($this->request->is('post')) {
+          # code...
+          $data = $this->request->getData();
+          $token = $this->request->getParam('token');
+
+          try {
+            $verify =$this->Users->Tokens->verify($token);
+            $user = $this->Users->find('all',['conditions'=>['Users.id'=>$verify->foreign_key]])->first();
+            $save = $this->Users->patchEntity($user,$data);
+
+          if($verify):
+            $this->Flash->success(__('New Password has been saved.'));
+            $this->Users->save($save);
+            $sent = $this->getMailer('User')->send('confirmresetPassword', [$user]);
+            //($sent);
+          endif;
+          } catch (\Exception $e) {
+            $this->Flash->error(__('Verification error. Either token has expired or used. Try registering again'));
+            //return $this->redirect(['action'=>'register']);
+          }
+        }
+        //$this->set(compact('user','token'));
+      }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function edit($id = null)
+    {
+        
+        //debug($this->request->getData());
+            $this->loadModel('Carts');
+            $this->loadModel('Referrals');
+        $cart = $this->Carts->getCount();
+        
+
+        $id == '' ? $id = $this->Auth->user('id') : '';
+
+        $user = $this->Users->get($id, [
+            'contain' => []
+        ]);
+        
+      
+      //debug($id);
+        $this->paginate = [
+          'conditions'=>['referral_id'=> $user->id],
+           'contain' => ['Users'], 
+          'order' => ['created' =>'DESC']
+        ];
+        $referrals = $this->paginate($this->Referrals);
+        
+       // debug($referrals);
+
+        //debug($messages);
+      
+       //debug($user);
+
+        if($this->isAuthorize($user)){//check to see if user has authorization to edit account
+          if ($this->request->is(['patch', 'post', 'put'])) {
+              debug($this->request->getData());
+              $user = $this->Users->patchEntity($user, $this->request->getData());
+              /*foreach ($user as $role) {
+                # code...
+                debug($role['role']);
+              }*/
+            //debug($user);
+              if ($this->Users->save($user)) {
+                  $this->Flash->success(__('Profile Successfully update'));
+
+                  return $this->redirect($this->referer());
+              }
+
+              $this->Flash->error(__('Profile could not be saved. Please, try again.'));
+          }
+        }
+        else if(!$this->isAuthorize($user) && $user['id'] === $this->Auth->user('id'))
+        {
+          if ($this->request->is(['patch', 'post', 'put'])) {
+              $user = $this->Users->patchEntity($user, $this->request->getData());
+              //debug($this->request->getData());
+            // debug($user);
+              if ($this->Users->save($user)) {
+                  $this->Flash->success(__('Profile Successfully update.'));
+                    return $this->redirect($this->referer());
+
+              }
+
+              $this->Flash->error(__('Profile could not be saved. Please, try again.'));
+          }
+        }
+
+        else if( $id != $this->Auth->user('id') && $this->isAuthorize($user) == false)
+        { //allow ony user or admin to access this method and their profile
+          return $this->redirect($this->referer());
+        }
+
+        $countries = array("Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antarctica", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegowina", "Botswana", "Bouvet Island", "Brazil", "British Indian Ocean Territory", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos (Keeling) Islands", "Colombia", "Comoros", "Congo", "Congo, the Democratic Republic of the", "Cook Islands", "Costa Rica", "Cote d'Ivoire", "Croatia (Hrvatska)", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "France Metropolitan", "French Guiana", "French Polynesia", "French Southern Territories", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Heard and Mc Donald Islands", "Holy See (Vatican City State)", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran (Islamic Republic of)", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, Democratic People's Republic of", "Korea, Republic of", "Kuwait", "Kyrgyzstan", "Lao, People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libyan Arab Jamahiriya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia, The Former Yugoslav Republic of", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia, Federated States of", "Moldova, Republic of", "Monaco", "Mongolia", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "Norfolk Island", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russian Federation", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Seychelles", "Sierra Leone", "Singapore", "Slovakia (Slovak Republic)", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Georgia and the South Sandwich Islands", "Spain", "Sri Lanka", "St. Helena", "St. Pierre and Miquelon", "Sudan", "Suriname", "Svalbard and Jan Mayen Islands", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic", "Taiwan, Province of China", "Tajikistan", "Tanzania, United Republic of", "Thailand", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "United States Minor Outlying Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Vietnam", "Virgin Islands (British)", "Virgin Islands (U.S.)", "Wallis and Futuna Islands", "Western Sahara", "Yemen", "Yugoslavia", "Zambia", "Zimbabwe");
+
+          $this->set(compact('user','cart','countries','referrals'));
+          $this->set('_serialize', ['user']);
+    }
+
+    /**
+     * Admin Edit method
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function adminedit($id = null)
+    {
+
+            $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        
+        $user = $this->Users->get($id, [
+            'contain' => []
+        ]);
+        //debug($user);
+
+        if($this->isAuthorize($user)){//check to see if user has authorization to edit account
+          if ($this->request->is(['patch', 'post', 'put'])) {
+              $user = $this->Users->patchEntity($user, $this->request->getData());
+              if ($this->Users->save($user)) {
+                  $this->Flash->success(__('The user has been saved.'));
+
+                  return $this->redirect(['action' => 'index']);
+              }
+              $this->Flash->error(__('The user could not be saved. Please, try again.'));
+          }
+        }
+        else if(!$this->isAuthorize($user) && $user['id'] === $this->Auth->user('id'))
+        {
+          if ($this->request->is(['patch', 'post', 'put'])) {
+              $user = $this->Users->patchEntity($user, $this->request->getData());
+              if ($this->Users->save($user)) {
+                  $this->Flash->success(__('The user has been saved.'));
+                    return $this->redirect($this->referer());
+
+              }
+              $this->Flash->error(__('The user could not be saved. Please, try again.'));
+          }
+        }
+
+        else if( $id != $this->Auth->user('id') && $this->isAuthorize($user) == false)
+        { //allow ony user or admin to access this method and their profile
+          return $this->redirect($this->referer);
+        }
+
+          $this->set(compact('user','cart'));
+          $this->set('_serialize', ['user']);
+
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id User id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null)
+    {
+
+        $this->request->allowMethod(['post', 'delete']);
+        $user = $this->Users->get($id);
+
+        if($this->isAuthorize($user)){//check to see if user has authorization to edit account
+          if ($this->Users->delete($user)) {
+              $this->Flash->success(__('The user has been deleted.'));
+          } else {
+              $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+          }
+            return $this->redirect(['action' => 'index']);
+        }
+        else if(!$this->isAuthorize($user) && $user['id'] === $this->Auth->user('id'))
+        {
+          if ($this->Users->delete($user)) {
+              $this->Flash->success(__('The user has been deleted.'));
+          } else {
+              $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+          }
+        }
+
+        return $this->redirect(['controller' => 'users', 'action' => 'logout']);
+    }
+    public function producerprofile(){ $this->viewBuilder()->theme('Panel')->layout('register');}
+    public function topseller(){}
+
+}

@@ -1,0 +1,226 @@
+<style>
+    .breadcrumb>li+li:before
+    {
+        color:#f5f3f3;
+    }
+</style>
+<h1 style="font-weight: unset; margin-right: 24px;"> Membership Subscriptions
+<label style="font-weight: 300; font-size: 16px;">Control Panel</label></h1>
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb" style="font-size: 15px; background: #2626262b; border: 1px solid #999; box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);">
+    <li class="breadcrumb-item"><i class="fa fa-home" style="margin-right: 10px;"></i>Home</li>
+    <li class="breadcrumb-item" aria-current="page">subscription</li>
+    <li class="breadcrumb-item active" aria-current="page">view membership</li>
+  </ol>
+</nav>
+
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Subscription[]|\Cake\Collection\CollectionInterface $subscriptions
+ */
+?>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<div class="row">
+    <div class="col-md-12">
+      <?php if ($Auth->user('id') == 1): ?>  <form action="" class="form-inline float-right">
+            <label for="">Search User</label>
+            <input type="text" name="search" class="form-control">
+            <input type="submit" class="btn btn-success" value="Search">
+        </form><?php endif; ?>
+    </div>
+</div>
+<div class="membershiplevels index large-9 medium-8 columns content table-responsive" style="border:none;padding:0; box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); border-radius: 10px;">
+
+    <table cellpadding="0" cellspacing="0" class="table table-striped" style="margin-bottom:0;">
+        <thead>
+            <tr>
+                <?php if ($Auth->user('id') == 1): ?> <th scope="col"><?= $this->Paginator->sort('user', ['label' => 'Users']); ?></th><?php endif; ?>
+                <th scope="col"><?= $this->Paginator->sort('level', ['label' => 'Subscriptions']) ?></th>
+                <th scope="col"><?= $this->Paginator->sort('status') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('created') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('expiry', ['label' => 'Expiry Date']) ?></th>
+                <?php
+                    if ($Auth->user('role') == 'admin') {
+                        ?>
+                        <th>
+                            Disable
+                        </th>
+                    <?php } ?>
+                <th scope="col"> Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <?php foreach ($subscriptions as $subscription): ?>
+                <tr>
+                    <?php if ($Auth->user('id') == 1): ?> <td><?= h($subscription->user->email); ?></td><?php endif; ?>
+                    <td><?= h($subscription->plan->name) ?></td>
+                    <td>
+                        <?php
+                        //if ($subscription->subscription_status == 'active') {
+                            ?>
+                            <?= (strtotime(date('Y-M-d')) <= strtotime($subscription->expiry))  && $subscription->subscription_status == 'active' ? '<span class="label label-success">' . h($subscription->status) . '</span>' : '<span class="label label-danger"> Disabled </span>'; ?>
+                            <?php
+                        //}else {
+                        ?>
+                          <!--  <span class="label label-danger"> Disabled </span>-->
+                        <?php
+                        //}
+                         ?>
+                    </td>
+                    <td><?= h($subscription->created) ?></td>
+                    <td><?= h($subscription->expiry) ?></td>
+                    <?php
+
+                    if ($Auth->user('role') == 'admin') {
+                        ?>
+                        <td>
+                            <?= $this->Form->postLink('Disable', ['controller' => 'Subscriptions', 'action' => 'stopSubscriptionmusic', $subscription->id], ['class' => ['btn', 'btn-danger', 'btn-sm'], 'confirm' => __('Are you sure you want to stop this subscription')]) ?>
+
+                        </td>
+                    <?php } else {
+                        ?>
+                        
+                    <?php }
+
+                    //print_r($Auth->user('role'));
+                    //die();
+                    ?>
+<td>
+                    <?php if ($Auth->user('id') == 1): ?> 
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#downgrade">Subscribe</button>
+                    <?php endif; ?>
+                    &nbsp;
+                    <button class="btn btn-success btn-sm" <?= $activeSub && $Auth->user('id') != 1 ? 'disabled' : '' ?> onclick="payWithPaystack('<?php echo $subscription->plan_id;?>', '<?php echo $subscription->plan->plan_schedule;?>')">Renew</button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    </div>
+    <div class="paginator">
+        <ul class="pagination">
+            <?= $this->Paginator->first('<< ' . __('first')) ?>
+            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__('next') . ' >') ?>
+            <?= $this->Paginator->last(__('last') . ' >>') ?>
+        </ul>
+        <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+    </div>
+</div>
+<?php
+$user = $this->request->session()->read('Auth.User');
+
+echo "<script>
+  function payWithPaystack(plan, type){
+    var plan = plan;
+    var handler = PaystackPop.setup({
+      key: 'pk_test_f6d51ecf105c2b10d5baf365a156ffad1f6c7116',
+      //key: 'pk_live_a6549831a5a97d351686d954540d754493973461',
+      first_name:'" . $user['firstname'] . "',
+      last_name:'" . $user['lastname'] . "',
+      email:'" . $user['email'] . "',
+      plan: plan,
+      ref: 'membership-'+Math.floor((Math.random() * 1000000000) + 1),
+      callback: function(response){
+        //console.log(response);
+          window.location = '/subscriptions/addsub/'+response.reference+'/'+type;
+      },
+      onClose: function(){
+          //alert('window closed');
+      }
+    });
+    handler.openIframe();
+  }
+</script>"
+?>
+
+
+<div id="downgrade" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Downgrade / Upgrade  user</h4>
+            </div>
+            <div class="modal-body">
+                <?=
+                $this->Form->create(null, [
+                    'url' => '/subscriptions/changeSubMusic'
+                    , 'type' => 'post'])
+                ?>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="control-label" for="email">Select User</label>
+                        </div>
+                        <div class="col-sm-9">
+
+                            <select class="form-control" required= "" name="userId">
+                                <option value="">-- Select a user --</option>
+                                <?php foreach ($subscriptions as $subscription): ?>
+                                    <option value="<?= h($subscription->user->id) ?>"> <?= h($subscription->user->email) ?> &nbsp; - &nbsp; (<?= h($subscription->user->aka) ?>)</option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div style="margin-top: 10px;"></div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="control-label" for="pwd">Select Package</label>
+                        </div>
+
+                        <div class="col-sm-9">
+                            <select class="form-control" required="" name="levelId">
+                                <option value="">-- Select a package</option>
+                                <?php foreach ($plans as $plan): ?>
+                                    <option value="<?php echo $plan['id']; ?>"> <?php echo $plan['name']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+
+                        </div>
+                        
+                    </div>
+
+                </div>
+                <div style="margin-top: 10px;"></div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <label class="control-label" for="pwd">Select Period</label>
+                        </div>
+
+                        <div class="col-sm-9">
+                            <select class="form-control" required="" name="period">
+                                <option value="">-- Select a period</option>
+                                <option value="1 year"> 1 Year </option>
+                            </select>
+
+                        </div>
+                        
+                    </div>
+
+                </div>
+                <div style="margin-top: 10px;"></div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-success pull-right">Submit</button>
+                    </div>
+                </div>
+                <?= $this->Form->end() ?>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+
+    </div>
+

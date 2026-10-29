@@ -1,0 +1,259 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ *
+ */
+?>
+<div class="container">
+  <div class="col-md-offset-1">
+<div class="col-md-9" id="songwriters_profile2">
+<div class="row" id="songwriters_profile1" >
+<div class="col-md-2" style="text-align: center;"><?= (null !== $director->photo )? $this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/thumbnail-'.$director->photo,['class'=>'img-fluid img-thumbnail img-circle img-resize'],['fullbase' => true]) : '<i class="fa fa-4x fa-user-circle text-primary sr-icons" style="margin-top: 10%"></i>'; ?> </div>
+
+<div class="col-md-4"  id="songwriters_profile" ><!--rating result box --><h2 class="lead" style="margin:0px;"><?= h($director->fullname) ?> </h2>
+<!--type of work-->
+<span class="text-uppercase"> Video Director</span>
+<br><br>
+<div>
+  <?=  (null !== $director->facebook ) ? $this->Html->link($this->Html->image('/img/facebook_profile.png'),$director->facebook,['escape'=>false]) : '';?>&nbsp;
+  <?=  (null !== $director->twitter ) ? $this->Html->link($this->Html->image('/img/twitter_profile.png'),$director->twitter,['escape'=>false]) : '';?>&nbsp;
+  <?= (null !== $director->instagram ) ?  $this->Html->link($this->Html->image('/img/instagram_profile.png'),$director->instagram,['escape'=>false]) : '';?>&nbsp;
+  <?= (null !== $director->youtube ) ? $this->Html->link($this->Html->image('/img/youtube_profile.png'),$director->youtube,['escape'=>false]) : '';?>
+</div></div>
+
+
+<div class="col-md-4"  id="songwriters_profile" ><!--rating result box -->
+  <div class="col-lg-12" style="text-align:center;">
+  <div class="star-rating" style="text-align:center;margin-top: 2%">
+       <?php
+        switch ($rating ='10') {
+          //if rating score is below 20
+          case !is_null($rating) && $rating < 20:
+            # code...
+            echo '<span class="fa fa-star"></span>';
+            break;
+            //if rating score is below 50
+          case !is_null($rating) && $rating > 20 && $rating <= 50:
+            # code...
+            echo '<span class="fa fa-star"></span><br><span class="fa fa-star"></span>';
+            break;
+            //if rating score is below 100
+          case !is_null($rating) && $rating > 50 && $rating <= 100:
+            # code...
+            echo '<span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span>';
+            break;
+            //if rating score is below 200
+          case !is_null($rating) && $rating > 100 && $rating <= 200:
+            # code...
+            echo '<span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span>';
+            break;
+            //if rating scrore is greater than 200
+          case !is_null($rating) && $rating > 200 :
+            # code...
+            echo '<span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span><br><span class="fa fa-star"></span>';
+            break;
+          default:
+            # code...
+            echo 'not rating yet';
+            break;
+        }
+         ?>
+          <span> Rated(<?= h($countraters) ?>) </span>
+      </div>
+    </div>
+</div>
+</div>
+
+<hr class="mt-3" style="background-color: rgba( 0,0,0,0.25);">
+<div class="row">
+     <!--director sample video start-->
+<?php
+$dvideos = json_decode($director['directors'][0]['videos_url']);
+foreach ($dvideos as $value) {
+  # code...
+  echo '<div class="col-md-3"><iframe width="100%" height="100%" src="'.$value.'" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe></div>';
+  };
+  ?>
+
+ </div>
+
+             <div class="row" style="background-color: #e1e1e1e1;">
+      <div class="col-md-4" ><!--xtral service box --></div>
+      <div class="col-md-5" >
+        <div class="rating">
+          <span class>Rate User</span>
+              <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Rocks!">5 stars</label>
+              <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Pretty good">4 stars</label>
+              <input type="radio" id="star3" name="rating"  value="3" /><label for="star3" title="Meh">3 stars</label>
+              <input type="radio" id="star2" name="rating"  value="2" /><label for="star2" title="Kinda bad">2 stars</label>
+              <input type="radio" id="star1" name="rating"  value="1" /><label for="star1" title="Sucks big time">1 star</label>
+          </div>
+    </div>
+  </div>
+<div class="row">
+
+          <div class="nav-tabs-custom" id="songwriters_profile4">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#activity" data-toggle="tab">Comment</a></li>
+              <li><a href="#timeline" data-toggle="tab">Complain</a></li>
+              <li><a href="#settings" data-toggle="tab">Request Video Directing Service</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="active tab-pane" id="activity">
+
+
+                              <!-- Post -->
+<div class="post clearfix">
+                <div id="commentresult"></div>
+                <!--?= $this->Form->create('add') ?-->
+                <!--form for getting comment in the mmrequesters profile-->
+                <div class="form-group margin-bottom-none">
+                <div class="col-sm-9">
+                <textarea rows="5" id ="comment" name="comment" class="form-control input-sm"></textarea>
+                <?= $this->Form->Control('mixeruser_id',['type'=>'hidden','default'=>$id]) ?>
+                <?= $this->Form->Control('type',['type'=>'hidden','default'=>'vd']) ?>
+                </div>
+                <div class="col-sm-3">
+                  <?= $this->Form->button(__('Submit'),['class'=>'btn btn-primary comment']) ?>
+                </div>
+                </div>
+                  <!--?= $this->Form->end() ?-->
+
+                </div>
+                <!-- /.post -->
+
+                <!-- Post -->
+                <div class="post">
+
+                  <!-- /.user-block -->
+                  <div class="row margin-bottom">
+                    <div class="col-sm-6">
+
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-sm-6">
+                      <div class="row">
+                        <div class="col-sm-6">
+
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-sm-6">
+
+                        </div>
+                        <!-- /.col -->
+                      </div>
+                      <!-- /.row -->
+                    </div>
+                    <!-- /.col -->
+                  </div>
+                  <!-- /.row -->
+
+                  <ul class="list-inline">
+                    <li><span class="dl link-black text-sm" onclick="like()"><i class="fa fa-thumbs-o-up margin-r-5 like"></i> Like</span>
+                    </li>
+                    <li class="pull-right">
+                      <span class="link-black text-sm"><i class="fa fa-comments-o margin-r-5"></i> Comments (<?= $countcomment ?>)</span></li>
+                        <li class="pull-right"><a href="#"  class="btn btn-warning btn-flat btn-xs view-comment">View comment</a></li>
+                  </ul>
+                  <div id='commentsdiv' ></div>
+
+                </div>
+                <!-- /.post -->
+              </div>
+              <!-- /.tab-pane -->
+              <div class="tab-pane" id="timeline">
+                 <!-- Post -->
+                                <div id="complaintresult"></div>
+                    <!-- Post -->
+                <div class="post clearfix">
+                    <?= $this->Form->create('complain',['class'=>'form-horizontal']) ?>
+                    <div class="form-group margin-bottom-none">
+                      <div class="col-sm-9">
+                        <textarea rows="5" id ="rant" name="rant" class="form-control input-sm" ></textarea>
+                        <?= $this->Form->Control('complaintmixeruser_id',['type'=>'hidden','default'=>$id]) ?>
+                        <?= $this->Form->Control('type',['type'=>'hidden','default'=>'vd']) ?>
+                      </div>
+                      <div class="col-sm-3">
+                        <?= $this->Form->button(__('Send'),['class'=>'btn btn-danger complaint']) ?>
+                      </div>
+                    </div>
+                    <?= $this->Form->end() ?>
+                </div>
+                <!-- /.post -->
+
+                  <!-- END timeline item -->
+                  <!-- timeline item -->
+
+                    <div class="timeline-item">
+                      <div class="timeline-body">
+                      </div>
+                      <div class="timeline-footer">
+                      </div>
+                    </div>
+
+                  <!-- END timeline item -->
+                  <!-- timeline time label -->
+
+                    <div class="timeline-item">
+                      <span class="time"></span>
+
+                      <div class="timeline-body">
+
+                      </div>
+                    </div>
+
+              </div>
+              <!-- /.tab-pane -->
+
+              <div class="tab-pane" id="settings">
+                <div class="form-horizontal">
+<?= $this->Form->create($profile,['url'=>['controller'=>'directorequests','action'=>'add']]) ?>
+                  <div class="form-group">
+                    <label for="inputExperience" class="col-sm-2 control-label"></label>
+
+                    <div class="col-sm-10"><span>Type Of Video Shoot</span>
+                      <textarea rows="5" id ="rant" name="video_type" class="form-control input-sm" ></textarea>
+                      <?= $this->Form->Control('director_id',['type'=>'hidden','default'=>$id]) ?>
+                      <span>Eg. Music Video, Documentary etc.</span>
+
+                    </div>
+                  </div>
+
+            <div class="form-group">
+              <label for="inputName" class="col-sm-2 control-label"></label>
+              <div class="col-sm-10"><span>Project Deadline Date</span>
+                <div class="input-group date" >
+                   <input type="date" class="form-control" id="datepicker" name="deadline">
+                </div>
+                <!-- /.input group -->
+              </div>
+            </div>
+
+ <!-- radio -->
+
+            <div class="form-group">
+                    <label for="inputExperience" class="col-sm-2 control-label"></label>
+
+                    <div class="col-sm-10"><span>Brief About Your Project</span>
+                      <textarea class="form-control" name="brief" id="brief" placeholder=""></textarea>
+                      <span>Tell me more about the project at hand, the camera type to be used, etc.</span>
+                    </div>
+                  </div>
+
+                    <div class="form-group">
+                    <div class="col-sm-12">
+                      <?= $this->Form->button(__('Submit Request'),['class'=>'btn btn-primary center-block text-center']) ?>
+                    </div>
+                  </div>
+                  <?= $this->Form->end() ?>
+
+                </div>
+              </div>
+              <!-- /.tab-pane -->
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- /.nav-tabs-custom -->
+        </div>
+      </div>
+      </div>

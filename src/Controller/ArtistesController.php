@@ -1,0 +1,385 @@
+<?php
+
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\I18n\Time;
+use Cake\ORM\TableRegistry;
+
+/**
+ * Artistes Controller
+ *
+ * @property \App\Model\Table\ArtistesTable $Artistes
+ *
+ * @method \App\Model\Entity\Artiste[] paginate($object = null, array $settings = [])
+ */
+class ArtistesController extends AppController {
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function index() {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $this->paginate = [
+                // 'contain' => ['Users', 'Booked']
+        ];
+        $id = $this->Auth->user('id');
+        $query = $this->Artistes->find('all');
+        //->where(['user_id' => $id]);
+
+        $artistes = $this->paginate($query);
+        //debug($artistes);
+        $this->set(compact('artistes', 'cart'));
+        $this->set('_serialize', ['artistes']);
+    }
+
+    /**
+     * Listing method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function listing() {
+
+        //$this->viewBuilder()->setLayout("newdesign2");
+
+
+        $this->loadModel('Carts');
+        $this->loadModel('Stores');
+        $this->loadModel('PageBanner');
+        $cart = $this->Carts->getCount();
+
+        $this->viewBuilder()->theme('Panel')->layout('newdesign');
+        $this->paginate = [
+                //'limit' => 1,
+        ];
+        $display = 'show';
+        $date = date('Y-m-d');
+
+        $query = $this->Artistes->find();
+        $query->matching(
+                'Users.Subscriptions', function($q) use($date) {
+            return
+                            $q->where(['Subscriptions.expiry >=' => $date, 'Subscriptions.status' => 'active'])
+                            ->matching('Plans', function($x) {
+                                return $x
+                                        ->where(['plan_code' => 'PLN_eatcvjb7yrenzej']);
+                            })
+            ;
+        });
+        $query->contain(['Users' => ['Likes' => function ($y) use ($query) {
+                    return $y->select(['user_id'])
+                                    ->select(['type' => $query->func()->count('type')])
+                                    ->where(['type' => 'ac']);
+                }]]);
+        if (!empty($this->request->query('search'))) {
+            $search = $this->request->query('search');
+            $query->where(['artiste_name LIKE' => '%' . $search . '%'])
+                    ->orWhere(['Users.firstname LIKE' => '%' . $search . '%'])
+                    ->orWhere(['Users.lastname LIKE' => '%' . $search . '%'])
+                    ->orWhere(['Users.fullname LIKE' => '%' . $search . '%'])
+                    ->orWhere(['Users.aka LIKE' => '%' . $search . '%']);
+        }
+        $artistes = $this->paginate($query);
+        $topArtists = $this->Artistes->find();
+        $topArtists->matching(
+                'Users.Subscriptions', function($q) use($date) {
+            return
+                            $q->where(['Subscriptions.expiry >=' => $date, 'Subscriptions.status' => 'active'])
+                            ->matching('Plans', function($x) {
+                                return $x
+                                        ->where(['plan_code' => 'PLN_eatcvjb7yrenzej']);
+                            })
+            ;
+        });
+        $topArtistes = $topArtists->contain('Users')->where(['top_artistes' => 1])->limit(5)->all();
+        $promotedquery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.promoted' => 'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+        $promoted = $promotedquery->toArray();
+
+        $banner = $this->PageBanner->find('all', ['conditions' => ['status' => 1, 'page' => 4]])->first();
+
+        //debug($artistes);
+        $title = "Book African Artistes For Shows And Events | Collab With African Singers And Rappers - AmplifiHub Artiste Hub";
+        $description = "Need to book Artistes for shows or events? Meet the coolest artistes in Africa here on AmplifiHub. You just hit the motherload";
+        $AmpKeyword = "Singers in Africa, Collab with a singer, meet African musicians, African music, Afrobeats, Best African musicians, Download african music, Download Nigerian music";
+        $this->set(compact('AmpKeyword', 'title', 'description', 'artistes', 'display', 'cart', 'promoted', 'banner', 'topArtistes'));
+        $this->set('_serialize', ['artistes']);
+    }
+
+    /**
+     * Profile method
+     *
+     * @param string|null $id Mixmastering id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function profile($user_id = null) {
+        $this->viewBuilder()->setLayout("newdesign");
+        $this->loadModel('Carts');
+        $this->loadModel('Stores');
+
+        $cart = $this->Carts->getCount();
+        $artiste = $this->Artistes->newEntity();
+        $mixeruser_id = $this->request->getparam('user_id');
+
+
+
+        //load MixMasterings to show work done by Producer
+        // $beat_sample = $this->Artistes->find()->where(['user_id' => $mixeruser_id])->contain(['Genres'])->first();
+        //Producers Rating and counting of number of raters
+        $this->loadmodel('Ratings');
+        $query = $this->Ratings->find('all', ['conditions' => ['user_id' => $mixeruser_id]]);
+
+        $countraters = $query->count();
+
+        $ratingsum = $query->select(['rating' => $query->func()->sum('rating')])->first();
+
+        $rating = @number_format($ratingsum['rating'] / $countraters);
+
+        $user = $this->Artistes->find('all', ['conditions' => ['Artistes.id' => $mixeruser_id]])->contain(['Genres', 'Users'])->first();
+        $countcomment = $this->Artistes->Users->Comments->find('all', ['conditions' => ['Comments.Commentee_id' => $mixeruser_id, 'Comments.type' => 'ac']])->count();
+
+        $display = 'show';
+
+
+        ///PROMOTED BEATS
+
+        $promotedquery = $this->Stores->find('all', [
+            'contain' => ['Users', 'Genres'],
+            'conditions' => ['Stores.promoted' => 'yes'],
+            'limit' => 12,
+            'order' => ['Stores.created' => 'ASC']
+        ]);
+        $promoted = $promotedquery->toArray();
+
+        $this->set(compact('artiste', 'user', 'mixeruser_id', 'countcomment', 'countraters', 'rating', 'beat_sample', 'display', 'cart', 'promoted'));
+        $this->set('_serialize', ['artiste']);
+    }
+
+    /**
+     * Admin method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function admin() {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+        $this->paginate = [
+            'contain' => ['Users', 'Booked']
+        ];
+        $artistes = $this->paginate($this->Artistes);
+        //debug($artistes);
+        $this->set(compact('artistes', 'cart'));
+        $this->set('_serialize', ['artistes']);
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Artiste id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $artiste = $this->Artistes->get($id, [
+            'contain' => ['Users', 'Artistes']
+        ]);
+
+        $this->set('artiste', $artiste);
+        $this->set('cart', $cart);
+        $this->set('_serialize', ['artiste']);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add() {
+
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $artiste = $this->Artistes->find()->where(['User_id' => $this->Auth->user('id')])->first();
+
+        //debug($query);
+        $substatus = null;
+
+        //check if user subscribe as an artiste and account still active
+        $check = $this->Artistes->Subscriptions->find('all')->where(['Subscriptions.user_id' => $this->Auth->user('id'), 'Subscriptions.expiry >' => Time::Now()])->contain(['plans' => function($q) {
+                return $q
+                                ->where(['plan_code' => 'PLN_eatcvjb7yrenzej']);
+            }]);
+        $checkexpiry = $check->first();
+
+        //if not null save else warn user to behave and subscribe
+        if (!$check->isEmpty()) {
+            $substatus = 'active';
+        } elseif (!$check->isEmpty() && $checkexpiry['expiry'] < Time::Now()) {
+            # code...
+            $this->Flash->error(__('You need to resubscribe because your subscription has expired'));
+            //return $this->redirect('/subscribe');
+        } else {
+            # code...
+            $this->Flash->error(__('You need to subscribe to be able to set up an Artiste profile'));
+            //return $this->redirect('/subscribe');
+        }
+
+
+        $this->loadModel('Genres');
+        $genres = $this->Genres->find('list', ['limit' => 200]);
+        $this->set(compact('artiste', 'artistes', 'genres', 'substatus', 'cart'));
+        $this->set('_serialize', ['artiste']);
+    }
+
+    // Ajax upload for Artiste
+    public function addArtiste() {
+        $this->autoRender = false;
+
+        $artiste = $this->Artistes->find()->where(['User_id' => $this->Auth->user('id')])->first();
+
+        //debug($query);
+        $substatus = null;
+
+        //check if user subscribe as an artiste and account still active
+        $check = $this->Artistes->Subscriptions->find('all')->where(['Subscriptions.user_id' => $this->Auth->user('id'), 'Subscriptions.expiry >' => Time::Now()])->contain(['plans' => function($q) {
+                return $q
+                                ->where(['plan_code' => 'PLN_eatcvjb7yrenzej']);
+            }]);
+        $checkexpiry = $check->isEmpty();
+
+        //if not null save else warn user to behave and subscribe
+        if (!$check->isEmpty()) {
+            $substatus = 'active';
+            if ($this->request->is('ajax')) {
+                $formdata = $this->request->getData();
+                $formdata['user_id'] = $this->Auth->user('id');
+                if ((is_null($artiste))) {
+                    $artiste = $this->Artistes->newEntity();
+                }
+                $query = $this->Artistes->patchEntity($artiste, $formdata);
+                # code...
+                //debug($query);
+                if ($this->Artistes->save($query)) {
+                    echo json_encode(['error' => "no", 'message' => 'The artiste profile has been saved.']);
+                    //$this->Flash->success(__('The artiste profile has been saved.'));
+                    //return $this->redirect(['action' => 'add']);
+                } else {
+                    echo json_encode(['validation' => $artiste->errors()]);
+                }
+            }
+        } elseif (!$check->isEmpty() && $checkexpiry['expiry'] < Time::Now()) {
+            # code...
+            echo json_encode(['error' => "yes", 'message' => 'You need to resubscribe because your subscription has expired']);
+            //$this->Flash->error(__('You need to resubscribe because your subscription has expired'));
+            //return $this->redirect('/subscribe');
+        } else {
+            # code...
+            echo json_encode(['error' => "yes", 'message' => 'You need to subscribe to be able to set up an Artiste profile']);
+            //$this->Flash->error(__('You need to subscribe to be able to set up an Artiste profile'));
+            //return $this->redirect('/subscribe');
+        }
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Artiste id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function edit($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $artiste = $this->Artistes->get($id, [
+            'contain' => []
+        ]);
+        //debug($artiste);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $artiste = $this->Artistes->patchEntity($artiste, $this->request->getData());
+            if ($this->Artistes->save($artiste)) {
+                $this->Flash->success(__('The artiste has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The artiste could not be saved. Please, try again.'));
+        }
+        $users = $this->Artistes->Users->find('list', ['limit' => 200]);
+        $this->set(compact('artiste', 'users', 'cart'));
+        $this->set('_serialize', ['artiste']);
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Artiste id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null) {
+        $this->request->allowMethod(['post', 'delete']);
+        $artiste = $this->Artistes->get($id);
+        if ($this->Artistes->delete($artiste)) {
+            $this->Flash->success(__('The artiste has been deleted.'));
+        } else {
+            $this->Flash->error(__('The artiste could not be deleted. Please, try again.'));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
+    public function featured($id = null, $status = 0) {
+
+        if ($this->request->is('post')) {
+
+
+
+            $articlesTable = TableRegistry::get('Artistes');
+            $article = $articlesTable->get($id); // Return article with id 12
+
+            $article->top_artistes = $status;
+            $articlesTable->save($article);
+
+            return $this->redirect(['action' => 'featured']);
+
+
+
+//            $artistesModel = $this->Artistes->get($id, [
+//            'contain' => []
+//            ]);
+//            if($artistesModel){
+//                
+//                $artistesData = $this->Artistes->patchEntity($artistesModel, ['top_artistes'=>$status]);
+//                $this->Artistes->save($artistesData); 
+//                return $this->redirect(['action' => 'topArtistes']);
+//                
+//            }
+        }
+
+        $topArtistes = $this->Artistes->find()->contain('Users')->where(['top_artistes' => 1])->all();
+        $this->paginate = [
+            'contain' => [
+                'Users',
+            //'Booked'
+            ]
+        ];
+        $id = $this->Auth->user('id');
+        $query = $this->Artistes->find('all');
+        $artistes = $this->paginate($query);
+
+        $this->set(compact('artistes', 'topArtistes'));
+    }
+
+}

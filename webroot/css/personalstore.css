@@ -1,0 +1,51 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Oct 16, 2018, 6:36:28 PM
+    Author     : SONY
+*/
+
+.priceAndCart{
+    padding-left: 0px;
+}
+@media only screen and (max-width: 900px){
+.coverImage{
+    display: none!important;
+}
+
+.play-wrap > img{
+    width: 48px;
+}
+
+
+}
+
+.invisiblePrices{
+    padding: 10px 3px;
+    border: 1px solid;
+    text-align: center;
+    margin: 0px 3px;
+}
+
+@media only screen and (max-width: 452px){
+.priceHolderList{
+    display: block;    
+}
+
+}
+
+@media only screen and (max-width: 767px) and (min-width: 700px){
+    .priceAndCart{
+    display: inline-block;
+}
+}
+
+
+@media only screen and (max-width: 699px){
+    .priceAndCart{
+    display: none;
+}
+}

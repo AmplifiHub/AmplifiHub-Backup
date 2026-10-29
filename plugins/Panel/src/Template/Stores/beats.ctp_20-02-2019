@@ -1,0 +1,351 @@
+ 
+<section class="african-beat-block container-fluid">
+    <h1>The African Beats Hub</h1>
+    <div class="row">
+        <div class="col">
+            <div class="beats-block">
+                <div class="holder">
+                    <span class="heading">PROMOTED BEATS</span>
+                    <div class="row">
+                           <?php foreach($promoted as $promo){ ?> 
+                        <div class="col">
+                            <a href="javascript:void(0)">
+                                <div class="box">
+                                    <div class="img-holder control-wrap">
+                                           <?php echo $this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/'.$promo['cover'],['class'=>' ','style'=> ' ']);?>
+                                        <a href="javascript:void(0)" 
+                                           data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($promo['lease_name']);?>"
+                                           song_type="<?=h($promo['lease_type']);?>" 
+                                           data-name="<?=h(substr($promo['name'],0,10));?>"
+                                           bit-id="<?=h($promo['id']);?>" 
+                                           data-user="<?= h(substr($promo['user']['aka'], 0, 10));?>"
+                                           class="play-wrap show play">
+                                            <i class="fa fa-play"></i>
+                                        </a>
+                                        <a class="pause-wrap hide play">
+                                            <i class="fa fa-pause"></i>
+                                        </a>
+                                    </div>
+                                    <div class="text-holder">
+                                        <span class="name"><?php if(strlen($promo->user->aka) > 8){ echo substr($promo->user->aka,0,8). "..";}else{echo $promo->user->aka;}?></span>
+                                    </div>
+                                    <a class="btn addtocart" data-id="<?php echo $promo['id'];?>" >
+                                        <i class="fa fa-shopping-cart"></i><?= $promo->lease_price ? h(number_format($promo->lease_price)): h(0) ?>+</a>
+                                </div>
+                            </a>
+                        </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="tranding-beats">
+                <span class="title">trending beats</span>
+                <ul class="tranding-list">
+                    <?php foreach($trendingBid as $trending){ ?>
+                    <li>
+ 
+                        
+                        
+                        <div class=" control-wrap">
+                             <a href="javascript:void(0)" 
+                                data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($trending['lease_name']);?>"
+                                song_type="<?=h($trending['lease_type']);?>" 
+                                data-name="<?=h(substr($trending['name'],0,10));?>"
+                                bit-id="<?=h($trending['id']);?>" 
+                                data-user="<?= h(substr($trending['user']['aka'], 0, 10));?>"
+                                class="play-wrap show play">
+                                 <i class="fa fa-play"></i>
+                             </a>
+                             <a class="pause-wrap hide play">
+                                 <i class="fa fa-pause"></i>
+                             </a>
+                         </div>
+                        
+                        
+                        
+                        <div class="beat-info">
+                            <span class="beat"><?= $trending->name ?></span> 
+                            <span class="beat-info"><?=  $trending->genre->genre?></span> 
+                            <span class="beat-type"><?= $trending->bpm ?>BPM</span>
+                        </div>
+                        <a class="btn addtocart" data-id="<?php echo $trending['id'];?>" >
+                                        <i class="fa fa-shopping-cart"></i><?= $trending->lease_price ? h(number_format($trending->lease_price)): h(0) ?>+</a>
+                    </li>
+                    <?php } ?>
+                     
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<?php if($banner){ ?>
+<section class="featured-block container-fluid">
+    <div class="bg">
+        <span class="title">featured stuff</span>
+        <div class="img-holder" style="background-image: url(<?= 'https://s3.us-east-2.amazonaws.com/amplifihub/PageBanner/file_name/'.$banner->file_name ?>);"></div>
+    </div>
+</section>
+<?php } ?>
+<section class="producer-block container-fluid">
+    <div class="bg">
+        <span class="title">top producers</span>
+        <div class="row">
+            <?php foreach ($topProducer as  $tProducer) { 
+                //echo "<pre>";
+                //print_r($tProducer);
+                //echo "<pre>";
+                ?>
+               
+
+            <div class="col">
+                <div class="box">
+                    <div class="producer">
+                        <div class="img-holder">
+                            <div class="img">
+                                 <img src="https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/<?= $tProducer->photo ?>" alt="amplifihub african afro beat music producer instrumental image">
+                            </div>
+                            <span class="info">
+                                 <?php 
+                                    if(count($tProducer->directors)){
+                                         echo "Music Producer";
+                                    }elseif(count($tProducer->songwriters)){
+                                         echo "Music Producer";
+                                    }elseif(count($tProducer->mix_masterings)){
+                                         echo "Music Producer";
+                                    }elseif(count($tProducer->artistes)){
+                                        echo "Music Producer";
+                                    }else{
+
+                                    }
+
+                                ?>
+
+                            </span>
+                            <span class="name"><?= substr($tProducer->aka,0,5) ?></span>
+                        </div>
+                        <div class="featured-info">
+                            <table class="beatinfo-table">
+                                <tbody>
+                                    <?php foreach($tProducer->stores as $key=>$tstr){ 
+                                        if($key > 1){
+                                            continue;
+                                        }
+
+                                    ?>
+                                    <tr>
+                                        <td>
+                                          <div class="img-holder control-wrap">
+                                                       
+                                                        <a href="javascript:void(0)" 
+                                                        data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($tstr['lease_name']);?>"
+                                                        song_type="<?=h($tstr['lease_type']);?>" 
+                                                        data-name="<?=h(substr($tstr['name'],0,10));?>"
+                                                        data-user="<?= h(substr($tstr['user']['aka'], 0, 10));?>"
+                                                        bit-id="<?=h($tstr['id']);?>" 
+                                                        class="play-wrap show play">
+                                                <i class="fa fa-play"></i>
+                                        </a>
+                                        <a class="pause-wrap hide play">
+                                            <i class="fa fa-pause"></i>
+                                        </a>
+                                        </div>
+                                        </td>
+                                        <td>
+                                            <span class="name"><?=h(substr($tstr['name'],0,10));?></span>
+                                        </td>
+                                        <td>
+
+                                                <a class="addtocart checkout" data-id="<?php echo $tstr['id'];?>" >
+                                                    <i class="fa fa-shopping-cart"></i>
+                                                </a>
+
+                                            <!-- <a href="#" class="checkout"><i class="fa  fa-shopping-cart"></i></a> -->
+                                        </td>
+                                    </tr>
+                                 <?php } ?>
+                                </tbody>
+                            </table>
+                            
+                        </div>
+                    </div>
+                    <a href="/mystore/<?=  $tProducer->aka ?>" class="btn green">view profile</a>
+                </div>
+            </div>
+             <?php  } ?>
+        </div>
+    </div>
+</section>
+<section class="beatstore-block container-fluid">
+    <div class="row">
+        <div class="col">
+            <ul class="menu">
+                <li>
+                    <select class="form-control" id="genre">
+                        <option value="">Or Sort by Genre</option>
+                        <?php foreach ($genres as $genre):?>
+                        <option <?php if($genreId == $genre->id){ echo 'selected';}?> value="<?= h($genre->id);?>"><?= h($genre->genre);?></option>
+                        <?php endforeach;?>
+
+                    </select>
+                </li>
+                <?php foreach ($genres as $key=>$genre):
+                    if($key > 3){
+                        continue;
+                    }
+                    
+                    ?>
+                <li><a href="/beat-hub?genre=<?= $genre->id ?>"><?= h($genre->genre);?></a></li>
+                <?php endforeach;?>
+                 
+            </ul>
+                <?= $this->Form->create(null,['url' => '/beat-hub','type' => 'get','class'=>"search-form"]) ?>
+
+            <div class="form-group">
+                <div class="input-wrap">
+                    <button class="search" style="border: none;">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <input name="term" type="searach" class="form-control" placeholder="Search Beats and Genre">
+                </div>
+            </div>
+            <?= $this->Form->end() ?>
+            <div class="table-wrapper" style="height:500px" id="storeHolder">
+                <table class="beat-table">
+                    <tbody>
+
+                         <?php foreach ($stores as $store): ?>
+                        <tr class="beatslist"    id="<?php echo $store->id;?>">
+                            <td>
+                                <div class="control-wrap">
+                                    <a href="javascript:void(0)" 
+                                       data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($store->lease_name);?>"
+                                       data-type="<?=h($store->lease_type);?>" 
+                                       data-name="<?= h(substr($store->name, 0, 10));?>"
+                                       bit-id="<?=h($store['id']);?>" 
+                                       data-user="<?= h(substr($store->user->aka, 0, 10));?>"
+                                       class="play-wrap show play">
+                                        <i class="fa fa-play"></i>
+                                    </a>
+                                    <a class="pause-wrap hide play">
+                                        <i class="fa fa-pause"></i>
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="img-holder">
+                                    <img src="<?= "https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/$store->cover" ?>" alt="amplifihub african afro beat instrumental image">
+                                </div>
+                            </td>
+                            <td>
+                                <span class="beat"><?php echo (strlen($store->name) > 8) ? substr($store->name,0,8). ".." : $store->name;?></span>
+                                <span class="beat-info"><?= (isset($store->_matchingData['Genres']->genre)) ? h($store->_matchingData['Genres']->genre) : h($store->genre->genre) ; ?> ||  <?= h($store->bpm) ?>bpm</h6></span>
+                                    <span class="product"><?= $this->Html->link(h($store->user->aka),'/mystore/'.$store->user->aka); ?></span>
+                            </td>
+                            <td>
+                                <span class="product"><?= $this->Html->link(h($store->user->aka),'/mystore/'.$store->user->aka); ?></span>
+                            </td>
+                            <td>
+                                <?php if($store->lease_price){ ?>
+                                <a class="btn addtocart" data-id="<?php echo $store->id;?>" >
+                                    <i class="fa fa-shopping-cart"></i><?= $store->lease_price ? h(number_format($store->lease_price)): h(0) ?>+
+                                </a>
+                                <?php }else{ ?>
+                                    <a class="btn freedownload">
+                                        <i class="fa fa-download"></i> Free Beat
+                                    </a>
+                                    <div class="download-link">
+                                        <a download="download" href="<?= "https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/".$store->lease_name ?>" >
+                                       Download<i class="fa fa-download"></i>
+                                    </a>
+                                    </div>
+                                    
+                                <?php } ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <div id="noBeats" style="display:none">
+                    <p>No more Beats</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+             <div class="cart">
+                <div class="bg">
+                    <span class="title">beat cart</span>
+                    <div id="cart-wrap"></div>
+                    <a href="/carts/view" class="btn green">checkout</a>
+                </div>
+            </div>
+            <div class="beats-block">
+                <div class="holder">
+                    <span class="heading">PROMOTED BEATS</span>
+                    <div class="row">
+                           <?php foreach($promoted as $promo){ ?> 
+                        <div class="col">
+                            <a href="javascript:void(0)">
+                                <div class="box">
+                                    <div class="img-holder control-wrap">
+                                           <?php echo $this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Stores/cover/'.$promo['cover'],['class'=>' ','style'=> ' ']);?>
+                                        <a href="javascript:void(0)" 
+                                           data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Stores/lease_name/<?=h($promo['lease_name']);?>"
+                                           song_type="<?=h($promo['lease_type']);?>" 
+                                           data-name="<?=h(substr($promo['name'],0,10));?>"
+                                           bit-id="<?=h($promo['id']);?>" 
+                                           data-user="<?= h(substr($promo['user']['aka'], 0, 10));?>"
+                                           class="play-wrap show play">
+                                            <i class="fa fa-play"></i>
+                                        </a>
+                                        <a class="pause-wrap hide play">
+                                            <i class="fa fa-pause"></i>
+                                        </a>
+                                    </div>
+                                    <div class="text-holder">
+                                        <span class="name"><?php if(strlen($promo->user->aka) > 8){ echo substr($promo->user->aka,0,8). "..";}else{echo $promo->user->aka;}?></span>
+                                    </div>
+                                    <a class="btn addtocart" data-id="<?php echo $promo['id'];?>" >
+                                        <i class="fa fa-shopping-cart"></i><?= $promo->lease_price ? h(number_format($promo->lease_price)): h(0) ?>+</a>
+                                </div>
+                            </a>
+                        </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
+<style>
+    header#header {
+        height: 65px;
+    }
+    .download-link{
+        display: none;
+    }
+.cart a {
+    /* padding: 0px !important; */
+    height: unset !important;;
+    width:  unset !important;
+    }
+
+    
+    .cart {
+    background-color: #333 !important
+}
+.cart a:hover {
+    background-color: #5abaa7 !important;
+}
+</style>
+
+
+
+

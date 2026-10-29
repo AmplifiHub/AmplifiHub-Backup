@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Controller;
+
+use App\Controller\AppController;
+use Cake\Mailer\Email;
+use Cake\Mailer\MailerAwareTrait;
+
+/**
+ * Directorequests Controller
+ *
+ * @property \App\Model\Table\DirectorequestsTable $Directorequests
+ *
+ * @method \App\Model\Entity\Directorequest[] paginate($object = null, array $settings = [])
+ */
+class DirectorequestsController extends AppController {
+
+    use MailerAwareTrait;
+
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|void
+     */
+    public function index() {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $this->paginate = [
+            'contain' => ['Users', 'Directors'],
+            'conditions' => ['user_id' => $this->Auth->user('id')]
+        ];
+        $directorequests = $this->paginate($this->Directorequests);
+
+        $this->set(compact('directorequests', 'cart'));
+        $this->set('_serialize', ['directorequests']);
+    }
+
+    /**
+     * View method
+     *
+     * @param string|null $id Directorequest id.
+     * @return \Cake\Http\Response|void
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function view($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $userid = $this->Auth->user('id');
+        $this->loadModel('Messages');
+        $saved = $this->Messages->updateAll(['status' => 'read'], ['orderid' => $id]);
+        $directorequest = $this->Directorequests->find()->contain(['Users', 'Directors'])->where(['orderid' => $id])->first();
+
+        $messages = $this->Directorequests->Messages->find()->order(['Messages.created' => 'DESC'])->where(['orderid' => $id])->contain(['Users', 'Messagers'])->toArray();
+        //debug($directorequest);
+        $this->set(compact('directorequest', 'messages', 'userid', 'cart'));
+        $this->set('_serialize', ['directorequest']);
+    }
+
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
+    public function add() {
+        $this->loadModel('Carts');
+        $cart = $this->Carts->getCount();
+
+        $this->autoRender = false;
+        $directorequest = $this->Directorequests->newEntity();
+        if ($this->request->is('post')) {
+            $orderid = 'dtr' . round(microtime(true));
+            $user_id = $this->Auth->user('id');
+
+
+
+
+
+            $this->loadModel('Messages');
+            $messagedata['messager_id'] = $user_id;
+            $messagedata['user_id'] = $this->request->data['director_id'];
+            $messagedata['orderid'] = $orderid;
+            $messagedata['message'] = 'Director Service Order placement';
+            $messagedata['service'] = 'Directorequests';
+            $messagedata['status'] = 'unread';
+            $message = $this->Messages->newEntity();
+            $message = $this->Messages->patchEntity($message, $messagedata);
+            $this->Messages->save($message);
+
+
+
+
+            $this->request->data['user_id'] = $user_id;
+            $this->request->data['orderid'] = $orderid;
+            $this->request->data['status'] = 'pending';
+            $directorequest = $this->Directorequests->patchEntity($directorequest, $this->request->getData());
+
+            //create notification
+
+
+            if ($this->Directorequests->save($directorequest)) {
+                $this->loadModel('Users');
+                $user = $this->Users->find()->where(['Users.id' => $directorequest->director_id])->first();
+                $user['service'] = 'Video Director';
+                $this->getMailer('User')->send('requests', [$user]);
+                $this->Flash->success(__('Your request has been placed.'));
+                return $this->redirect($this->referer());
+            }
+            $this->Flash->error(__('The request could not be placed. Please, try again.'));
+        }
+        $users = $this->Directorequests->Users->find('list', ['limit' => 200]);
+        $directors = $this->Directorequests->Directors->find('list', ['limit' => 200]);
+        $this->set(compact('directorequest', 'users', 'directors', 'cart'));
+        $this->set('_serialize', ['directorequest']);
+    }
+
+    /**
+     * Edit method
+     *
+     * @param string|null $id Directorequest id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Network\Exception\NotFoundException When record not found.
+     */
+    public function edit($id = null) {
+        $this->loadModel(Carts);
+        $cart = $this->Carts->getCount();
+
+        $directorequest = $this->Directorequests->get($id, [
+            'contain' => []
+        ]);
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $directorequest = $this->Directorequests->patchEntity($directorequest, $this->request->getData());
+            if ($this->Directorequests->save($directorequest)) {
+                $this->Flash->success(__('The directorequest has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The directorequest could not be saved. Please, try again.'));
+        }
+        $users = $this->Directorequests->Users->find('list', ['limit' => 200]);
+        $directors = $this->Directorequests->Directors->find('list', ['limit' => 200]);
+        $this->set(compact('directorequest', 'users', 'directors', 'cart'));
+        $this->set('_serialize', ['directorequest']);
+    }
+
+    /**
+     * Delete method
+     *
+     * @param string|null $id Directorequest id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
+    public function delete($id = null) {
+        $this->request->allowMethod(['post', 'delete']);
+        $directorequest = $this->Directorequests->get($id);
+        if ($this->Directorequests->delete($directorequest)) {
+            $this->Flash->success(__('The directorequest has been deleted.'));
+        } else {
+            $this->Flash->error(__('The directorequest could not be deleted. Please, try again.'));
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
+
+}

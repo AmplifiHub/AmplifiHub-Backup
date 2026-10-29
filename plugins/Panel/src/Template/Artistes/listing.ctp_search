@@ -1,0 +1,145 @@
+<?php
+ $this->assign('title','ARTISTES HUB');
+
+
+?>
+
+<section class="toprated-block container-fluid">
+    <h1>The Artiste Hub</h1>
+    <?php if($banner){ ?>
+    <div class="bg" style="background-image: url(<?= 'https://s3.us-east-2.amazonaws.com/amplifihub/PageBanner/file_name/'.$banner->file_name ?>);"></div>
+    <?php } ?>
+
+        <?php // $this->Form->create(null,[ 'url' => '/mixing-and-mastering-hub','class'=> 'search-form']) ?>
+        <?= $this->Form->create(null,[
+            'url' => '/mixing-and-mastering-hub',
+            'class'=>"search-form",
+            'type' => 'get'
+            ]
+        ) ?>
+
+    <div class="form-group">
+        <div class="input-wrap">
+            <a href="#" class="search"><i class="fa fa-search fa-2x"></i></a>
+            <input type="Searach" class="form-control search-input" placeholder="Search ">
+        </div>
+    </div>
+
+    <?= $this->Form->end() ?>
+</section>
+<section class="topdirector-block container-fluid">
+    <div class="bg">
+        <h1>Top artistes</h1>
+        <div class="artist-wrapper">
+            <div class="row">
+                
+                
+                
+                
+                <?php foreach ($topArtistes as $artiste): ?>
+                
+                <div class="col">
+                    <div class="box"> 
+                        <div class="img-holder control-wrap">
+                            
+                            <?= $dp = ($artiste->user_booking->photo !== null) ? 
+                            $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$artiste->user_booking->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive img-thumbnail','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ?>
+                            
+                             
+                            <a href="javascript:void(0)" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Artistes/artiste_song/<?= h($artiste->artiste_song); ?>"
+                                song_type="<?= h($artiste->song_type); ?>" 
+                                data-name="<?= h($artiste->song_title); ?>"
+                                data-user="<?= h(substr($artiste->artiste_name, 0, 10)); ?>"
+                                class="play-wrap show play">
+                                    <?php // $this->Html->image('white-play-128.png', ['class' => ['img-responsive', 'play']]); ?>
+                                    <i class="fa fa-play"></i>
+                            </a>
+                            <a class="pause-wrap hide play">
+                                <i class="fa fa-pause"></i>
+                                <?php // $this->Html->image('pause-128.png', ['class' => ['img-responsive', 'pause'], 'style' => 'width: 34px;height: 34px;margin-top: 12px;margin-left: 10px;']); ?>
+                            </a>
+                            
+                        </div>
+                        <span class="name"> <?= $artiste->artiste_name ?></span>
+                        <a href="<?= '/artiste/'.$artiste->id ?>" class="btn green profile">
+                            View Profile
+                        </a>
+                        <?php 
+                        $this->Form->postLink(
+                                __('View Profile'),
+                                '/artiste/'.$artiste->id,
+                                ['class' => 'btn green profile']
+                            )
+                        ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                 
+                 
+            </div>
+        </div>
+    </div>
+</section>
+<section class="director-block container-fluid">
+    <div class="holder">
+        <div class="artist-wrapper">
+            <div class="row">
+                <?php foreach ($artistes as $artiste): ?>
+                
+                <div class="col">
+                    <div class="box">
+                        <div class="img-holder control-wrap">
+                            
+                            <?= $dp = ($artiste->user_booking->photo !== null) ? 
+                            $this->Html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$artiste->user_booking->photo,['class'=>'img-thumbnail img-responsive']) : $this->Html->image('/img/default.png',['class'=>['img-responsive img-thumbnail','img-circle'],'style' =>['margin: 0 auto']],['fullbase' => true]); ?>
+                            
+                             
+                            <a href="javascript:void(0)" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Artistes/artiste_song/<?= h($artiste->artiste_song); ?>"
+                                song_type="<?= h($artiste->song_type); ?>" 
+                                data-name="<?= h($artiste->song_title); ?>"
+                                data-user="<?= h(substr($artiste->artiste_name, 0, 10)); ?>"
+                                class="play-wrap show play">
+                                    <?php // $this->Html->image('white-play-128.png', ['class' => ['img-responsive', 'play']]); ?>
+                                    <i class="fa fa-play"></i>
+                            </a>
+                            <a class="pause-wrap hide play">
+                                <i class="fa fa-pause"></i>
+                                <?php // $this->Html->image('pause-128.png', ['class' => ['img-responsive', 'pause'], 'style' => 'width: 34px;height: 34px;margin-top: 12px;margin-left: 10px;']); ?>
+                            </a>
+                            
+                        </div>
+                        <span class="name"> <?= $artiste->artiste_name ?></span>
+                        <a href="<?= '/artiste/'.$artiste->id ?>" class="btn green profile">
+                            View Profile
+                        </a>
+                        <?php $this->Form->postLink(
+                                __('View Profile'),
+                                '/artiste/'.$artiste->id,
+                                ['class' => 'btn green profile']
+                            )
+                        ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="row paginator_wrapper">
+                <div class="paginator">
+                    <ul class="pagination">
+                        <?= $this->Paginator->first('<< ' . __('first')) ?>
+                        <?= $this->Paginator->prev('< ' . __('previous')) ?>
+                        <?= $this->Paginator->numbers() ?>
+                        <?= $this->Paginator->next(__('next') . ' >') ?>
+                        <?= $this->Paginator->last(__('last') . ' >>') ?>
+                    </ul>
+                    <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    .img-thumbnail {
+        width: 112px!important;
+        height: 112px!important;
+    }
+</style>

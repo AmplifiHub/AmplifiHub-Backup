@@ -1,0 +1,121 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ * @var \App\Model\Entity\Mixmastering[]|\Cake\Collection\CollectionInterface $mixmasterings
+ */
+ $this->assign('title','MIXING AND MASTERING HUB');
+?>
+
+<div class="mixmasterings index large-9 medium-8 columns content" >
+    <div class="row head-wrap">
+        <div class="col-xs-12 col-md-8">
+            <h1 class="head"><?= __('The Mixing And Mastering Hub') ?></h1>
+        </div>
+        <div class="col-xs-12 col-md-4">
+            <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+              
+               <?= $this->Form->create(null,[
+    'url' => '/mixing-and-mastering-hub'
+,'type' => 'get']) ?>
+        <div id="custom-search-input">
+              <div class="row">
+          <div class="col-md-12">
+              <?= $this->Form->control('beats', ['label' => false,'id'=> 'term1','class' => ['search-query','form-control'],'placeholder'=> 'Search Mixers']);?>
+            <span class="input-group-btn">
+                <button class="btn btn-danger" type="submit"> <span class=" glyphicon glyphicon-search"></span> </button>
+            </span> </div>
+            </div>
+        </div>
+        <?= $this->Form->end() ?>
+            
+          
+          </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <div class="row">
+    
+    <?php foreach ($mixmasterings as $mix): ?>
+        <div class="col-md-4" style="margin-bottom: 15px;">
+    <div class="mix-wrap">
+    <div class="mix-body">
+        <div style="padding: 0px 20px;">
+        <div class="row">
+      <div class="col-xs-5 col-md-5">
+        <?= (null !== $mix->user->photo)? $this->Html->link($this->html->image('https://s3.us-east-2.amazonaws.com/amplifihub/Users/photo/'.$mix->user->photo,['class'=>'img-thumbnail img-responsive']),'#',['escape' => false]) : '<i class="fa fa-4x fa-user-circle text-primary sr-icons" style="margin-top: 10%"></i>'; ?>
+
+
+      </div>
+            <div class="col-xs-7 col-md-7" style="padding: 0px;">
+      <div class="row">
+      <div class="col-xs-6 col-md-6">
+        <span class="btn btn-danger">before</span>
+        <div class="control-wrap">
+      <a href="#" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Mixmasterings/original/<?=h($mix->original);?>"
+         data-type="<?=h($mix->original_type);?>" 
+         data-name="Before Mixing"
+         data-user="<?= h(substr($mix->user->aka, 0, 10));?>"
+         class="play-wrap show">
+         <?= $this->Html->image('white-play-128.png',['class'=>['img-responsive','play']]);?>
+         
+      </a>
+      <a class="pause-wrap hide">
+           <?= $this->Html->image('pause-128.png',['class'=> ['img-responsive','pause'],'style'=>'width: 34px;height: 34px;margin-top: 12px;margin-left: 10px;']); ?>
+      </a>
+      </div>
+      </div>
+      <div class="col-xs-6 col-md-6">
+        <span class="btn btn-info">after</span>
+         <div class="control-wrap">
+      <a href="#" data-id="https://s3.us-east-2.amazonaws.com/amplifihub/Mixmasterings/after/<?=h($mix->after);?>"
+         data-type="<?=h($mix->after_type);?>" 
+         data-name="After Mixing"
+         data-user="<?= h(substr($mix->user->aka, 0, 10));?>"
+         class="play-wrap show">
+         <?= $this->Html->image('white-play-128.png',['class'=>['img-responsive','play']]);?>
+         
+      </a>
+      <a class="pause-wrap hide">
+           <?= $this->Html->image('pause-128.png',['class'=> ['img-responsive','pause'],'style'=>'width: 34px;height: 34px;margin-top: 12px;margin-left: 10px;']); ?>
+      </a>
+      </div>
+      </div>
+    </div>
+          
+      </div>
+    </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row mix-name" style="text-align: center; padding-top: 10px;">  <?= $this->Html->link($mix->user->aka,'#') ?></div>
+            </div>
+        </div>
+    </div>
+    </div>
+  <div class="mix-footer">
+<ul class="list-inline text-primary">
+  
+    <?= $this->Form->postLink(
+            __('View Profile'),
+            '/mixer/'.$mix->user->id,
+            ['class' => 'btn btn-primary btn-block pull-right clearfix']
+        )
+    ?>
+  </ul></div>
+  </div>
+</div>
+  <?php endforeach; ?>
+</div>
+    <div class="paginator">
+        <ul class="pagination">
+            <?= $this->Paginator->first('<< ' . __('first')) ?>
+            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__('next') . ' >') ?>
+            <?= $this->Paginator->last(__('last') . ' >>') ?>
+        </ul>
+        <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+    </div>
+</div>
